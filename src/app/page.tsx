@@ -396,63 +396,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* 6. DUAL ECOSYSTEM: ADVERTISERS VS EARNERS */}
-      <section className="landing-section">
-        <div className="section-header-block">
-          <div className="section-pill">Two Sides, One Platform</div>
-          <h2 className="section-main-heading">Built for Both Brands & Everyday Earners</h2>
-          <p className="section-lead-text">
-            Whether you want to acquire high-value users or earn cash rewards in your spare time, EarnByApps connects you directly.
-          </p>
-        </div>
-
-        <div className="dual-spotlight-grid">
-          {/* For Brands / Advertisers */}
-          <div className="spotlight-card advertiser-card">
-            <div className="spotlight-badge brand-badge">For App Creators & Growth Teams</div>
-            <h3 className="spotlight-title">Accelerate Your App Growth</h3>
-            <p className="spotlight-text">
-              Scale installs, boost ratings, and build communities with complete anti-fraud transparency.
-            </p>
-            <ul className="spotlight-feature-list">
-              <li><span>✓</span> Pay strictly for confirmed milestones (CPA model)</li>
-              <li><span>✓</span> Rotating referral link pools to balance traffic</li>
-              <li><span>✓</span> Proof audit engine with manual & automated review</li>
-              <li><span>✓</span> Self-serve campaign dashboard with live analytics</li>
-              <li><span>✓</span> Geo & device targeting across India & Global markets</li>
-            </ul>
-            <Link 
-              href="/partner/create-campaign" 
-              className="spotlight-btn btn-brand"
-              onClick={handleLaunchCampaignClick}
-            >
-              Create Advertiser Campaign →
-            </Link>
-          </div>
-
-          {/* For Earners */}
-          <div className="spotlight-card earner-card">
-            <div className="spotlight-badge earner-badge">For Users & App Testers</div>
-            <h3 className="spotlight-title">Earn Real Cash in Spare Time</h3>
-            <p className="spotlight-text">
-              Discover exciting new apps, test games, complete quick tasks, and get rewarded instantly.
-            </p>
-            <ul className="spotlight-feature-list">
-              <li><span>✓</span> Cash payouts via instant UPI, Paytm, PayPal & Crypto</li>
-              <li><span>✓</span> No confusing point systems — earn real currency</li>
-              <li><span>✓</span> High-paying tasks ranging from ₹10 to ₹500+ per completion</li>
-              <li><span>✓</span> Reliable 24/7 payout processing with zero hidden fees</li>
-              <li><span>✓</span> Daily updated offer feed on mobile & web</li>
-            </ul>
-            <Link href="/offerwall" className="spotlight-btn btn-earner">
-              Browse Earning Feed →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. COMPARISON TABLE: TRADITIONAL ADS VS EARNBYAPPS */}
+      {/* 6. COMPARISON TABLE: TRADITIONAL ADS VS EARNBYAPPS */}
       <section className="landing-section">
         <div className="section-header-block">
           <div className="section-pill">Why We Win</div>
@@ -1120,105 +1064,7 @@ export default function Home() {
           margin-top: 8px;
         }
 
-        /* 6. Dual Spotlight */
-        .dual-spotlight-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 28px;
-        }
-        .spotlight-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 22px;
-          padding: 36px 32px;
-          display: flex;
-          flex-direction: column;
-          transition: transform 0.25s ease;
-        }
-        .spotlight-card:hover {
-          transform: translateY(-4px);
-        }
-        .spotlight-badge {
-          display: inline-block;
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          padding: 4px 12px;
-          border-radius: 20px;
-          margin-bottom: 16px;
-          align-self: flex-start;
-        }
-        .brand-badge {
-          background: rgba(79, 70, 229, 0.12);
-          color: #818cf8;
-          border: 1px solid rgba(79, 70, 229, 0.3);
-        }
-        .earner-badge {
-          background: rgba(16, 185, 129, 0.12);
-          color: #10b981;
-          border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        .spotlight-title {
-          font-family: var(--font-display);
-          font-size: 1.6rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin-bottom: 10px;
-        }
-        .spotlight-text {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          line-height: 1.6;
-          margin-bottom: 24px;
-        }
-        .spotlight-feature-list {
-          list-style: none;
-          padding: 0;
-          margin: 0 0 32px 0;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          flex-grow: 1;
-        }
-        .spotlight-feature-list li {
-          font-size: 0.9rem;
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .spotlight-feature-list li span {
-          color: #10b981;
-          font-weight: 900;
-        }
-        .spotlight-btn {
-          display: inline-block;
-          text-align: center;
-          padding: 12px 24px;
-          border-radius: 12px;
-          font-size: 0.95rem;
-          font-weight: 700;
-          text-decoration: none;
-          transition: all 0.2s ease;
-        }
-        .btn-brand {
-          background: var(--accent-indigo);
-          color: #fff;
-          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-        }
-        .btn-brand:hover {
-          background: var(--accent-indigo-hover);
-        }
-        .btn-earner {
-          background: rgba(16, 185, 129, 0.15);
-          color: #10b981;
-          border: 1px solid rgba(16, 185, 129, 0.4);
-        }
-        .btn-earner:hover {
-          background: rgba(16, 185, 129, 0.25);
-        }
-
-        /* 7. Comparison Table */
+        /* 6. Comparison Table */
         .comparison-table-wrapper {
           overflow-x: auto;
           background: var(--bg-card);
@@ -1412,9 +1258,6 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
           .calculator-wrapper-card {
-            grid-template-columns: 1fr;
-          }
-          .dual-spotlight-grid {
             grid-template-columns: 1fr;
           }
         }
