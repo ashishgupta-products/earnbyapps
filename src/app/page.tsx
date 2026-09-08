@@ -1,6 +1,6 @@
 "use client";
  
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { getCategoryIcon } from '../data/apps';
@@ -48,26 +48,6 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, [currentText, isDeleting, wordIndex]);
-
-  // Interactive ROI Calculator State
-  const [selectedGoal, setSelectedGoal] = useState<'installs' | 'reviews' | 'signups' | 'community'>('installs');
-  const [actionCount, setActionCount] = useState(500);
-
-  const goalPricing = {
-    installs: { label: 'App Installs & Signups', costPerUnit: 8, unitName: 'Installs' },
-    reviews: { label: 'Store & Maps Reviews', costPerUnit: 15, unitName: 'Reviews' },
-    signups: { label: 'Lead & Account Registrations', costPerUnit: 12, unitName: 'Signups' },
-    community: { label: 'Telegram / WhatsApp Members', costPerUnit: 4, unitName: 'Members' }
-  };
-
-  const calculatedCost = useMemo(() => {
-    const unitPrice = goalPricing[selectedGoal].costPerUnit;
-    const gross = actionCount * unitPrice;
-    // 100 free credits discount applied (e.g. ₹100 worth)
-    const discount = 100;
-    const net = Math.max(0, gross - discount);
-    return { gross, discount, net, unitPrice };
-  }, [selectedGoal, actionCount]);
 
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -309,94 +289,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. INTERACTIVE ROI CALCULATOR */}
-      <section className="landing-section">
-        <div className="calculator-wrapper-card">
-          <div className="calc-header-side">
-            <div className="section-pill">Interactive Estimator</div>
-            <h2 className="calc-title">Estimate Your Acquisition Scale</h2>
-            <p className="calc-description">
-              See how many verified results you can get for your budget. Our transparent per-action pricing means zero surprises.
-            </p>
-
-            <div className="goal-picker-row">
-              {(['installs', 'reviews', 'signups', 'community'] as const).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedGoal(key)}
-                  className={`goal-btn ${selectedGoal === key ? 'active' : ''}`}
-                >
-                  {goalPricing[key].label}
-                </button>
-              ))}
-            </div>
-
-            <div className="slider-container-box">
-              <div className="slider-label-row">
-                <span>Target Actions:</span>
-                <span className="slider-val-highlight">{actionCount.toLocaleString()} {goalPricing[selectedGoal].unitName}</span>
-              </div>
-              <input
-                type="range"
-                min="100"
-                max="5000"
-                step="100"
-                value={actionCount}
-                onChange={(e) => setActionCount(Number(e.target.value))}
-                className="custom-range-slider"
-              />
-              <div className="slider-ticks">
-                <span>100</span>
-                <span>1,000</span>
-                <span>2,500</span>
-                <span>5,000</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="calc-summary-side">
-            <div className="summary-glass-box">
-              <div className="summary-title">Campaign Estimation</div>
-              
-              <div className="summary-line">
-                <span className="line-label">Cost per Action</span>
-                <span className="line-val">₹{calculatedCost.unitPrice}.00</span>
-              </div>
-              <div className="summary-line">
-                <span className="line-label">Total Actions</span>
-                <span className="line-val">{actionCount.toLocaleString()}</span>
-              </div>
-              <div className="summary-line">
-                <span className="line-label">Gross Investment</span>
-                <span className="line-val">₹{calculatedCost.gross.toLocaleString()}</span>
-              </div>
-              <div className="summary-line discount-line">
-                <span className="line-label">🎁 100 Free Credits Applied</span>
-                <span className="line-val">-₹{calculatedCost.discount}.00</span>
-              </div>
-
-              <div className="summary-divider"></div>
-
-              <div className="summary-total-row">
-                <div>
-                  <div className="total-label">Estimated Total</div>
-                  <div className="total-sub">Guaranteed Real Conversions</div>
-                </div>
-                <div className="total-amount">₹{calculatedCost.net.toLocaleString()}</div>
-              </div>
-
-              <Link 
-                href="/partner/create-campaign"
-                className="glow-btn-purple calc-cta-btn"
-                onClick={handleLaunchCampaignClick}
-              >
-                Start Campaign with Free Credits →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* 6. COMPARISON TABLE: TRADITIONAL ADS VS EARNBYAPPS */}
+      {/* 5. COMPARISON TABLE: TRADITIONAL ADS VS EARNBYAPPS */}
       <section className="landing-section">
         <div className="section-header-block">
           <div className="section-pill">Why We Win</div>
@@ -908,163 +801,7 @@ export default function Home() {
           border-radius: 6px;
         }
 
-        /* 5. ROI Calculator */
-        .calculator-wrapper-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 24px;
-          padding: 36px;
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 36px;
-          box-shadow: var(--shadow-premium);
-        }
-        .calc-title {
-          font-family: var(--font-display);
-          font-size: 1.85rem;
-          font-weight: 800;
-          color: var(--text-primary);
-          margin-bottom: 8px;
-        }
-        .calc-description {
-          font-size: 0.95rem;
-          color: var(--text-secondary);
-          margin-bottom: 24px;
-          line-height: 1.5;
-        }
-        .goal-picker-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-bottom: 28px;
-        }
-        .goal-btn {
-          padding: 10px 14px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          border-radius: 10px;
-          border: 1px solid var(--border-color);
-          background: rgba(255, 255, 255, 0.02);
-          color: var(--text-secondary);
-          cursor: pointer;
-          text-align: left;
-          transition: all 0.2s ease;
-        }
-        .goal-btn:hover {
-          border-color: var(--accent-indigo);
-          color: var(--text-primary);
-        }
-        .goal-btn.active {
-          border-color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.12);
-          color: #818cf8;
-          font-weight: 700;
-        }
-        body.light-theme .goal-btn.active {
-          color: #4f46e5;
-        }
-        .slider-container-box {
-          margin-top: 16px;
-        }
-        .slider-label-row {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: var(--text-primary);
-          margin-bottom: 12px;
-        }
-        .slider-val-highlight {
-          color: var(--accent-indigo);
-          font-weight: 800;
-        }
-        .custom-range-slider {
-          width: 100%;
-          height: 8px;
-          border-radius: 4px;
-          background: var(--border-color);
-          outline: none;
-          cursor: pointer;
-          accent-color: var(--accent-indigo);
-        }
-        .slider-ticks {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.75rem;
-          color: var(--text-muted);
-          margin-top: 6px;
-        }
-
-        .summary-glass-box {
-          background: var(--hero-card-bg);
-          border: 1px solid var(--border-color);
-          border-radius: 18px;
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          height: 100%;
-          justify-content: center;
-        }
-        .summary-title {
-          font-family: var(--font-display);
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: 4px;
-        }
-        .summary-line {
-          display: flex;
-          justify-content: space-between;
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-        }
-        .line-val {
-          font-weight: 600;
-          color: var(--text-primary);
-        }
-        .discount-line {
-          color: #10b981;
-          font-weight: 600;
-        }
-        .discount-line .line-val {
-          color: #10b981;
-        }
-        .summary-divider {
-          height: 1px;
-          background: var(--border-color);
-          margin: 6px 0;
-        }
-        .summary-total-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        .total-label {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-primary);
-        }
-        .total-sub {
-          font-size: 0.75rem;
-          color: var(--text-muted);
-        }
-        .total-amount {
-          font-family: var(--font-display);
-          font-size: 1.8rem;
-          font-weight: 900;
-          color: #818cf8;
-        }
-        body.light-theme .total-amount {
-          color: #4f46e5;
-        }
-        .calc-cta-btn {
-          width: 100%;
-          text-align: center;
-          margin-top: 8px;
-        }
-
-        /* 6. Comparison Table */
+        /* 5. Comparison Table */
         .comparison-table-wrapper {
           overflow-x: auto;
           background: var(--bg-card);
@@ -1257,9 +994,6 @@ export default function Home() {
           .steps-container-grid, .channels-grid {
             grid-template-columns: 1fr;
           }
-          .calculator-wrapper-card {
-            grid-template-columns: 1fr;
-          }
         }
 
         @media (max-width: 640px) {
@@ -1280,9 +1014,6 @@ export default function Home() {
           }
           .final-cta-card {
             padding: 40px 20px;
-          }
-          .goal-picker-row {
-            grid-template-columns: 1fr;
           }
         }
       `}</style>
