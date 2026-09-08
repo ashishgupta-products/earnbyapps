@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
-import { sql } from '../../../../lib/db';
+import { sql, isDbConfigured } from '../../../../lib/db';
+import { DEFAULT_PAYMENT_METHODS } from '../../payment-methods/route';
 
 export async function GET() {
+  if (!isDbConfigured) {
+    return NextResponse.json(DEFAULT_PAYMENT_METHODS);
+  }
+
   try {
     // Ensure table and column exist
     await sql`
@@ -26,10 +31,10 @@ export async function GET() {
       FROM payment_methods
       ORDER BY id ASC
     `;
-    return NextResponse.json(methods);
+    return NextResponse.json(methods.length > 0 ? methods : DEFAULT_PAYMENT_METHODS);
   } catch (error: any) {
-    console.error('Error in GET /api/admin/payment-methods:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.warn('Database error in GET /api/admin/payment-methods, using defaults:', error.message);
+    return NextResponse.json(DEFAULT_PAYMENT_METHODS);
   }
 }
 

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { sql } from "../../../../lib/db";
+import { sql, isDbConfigured } from "../../../../lib/db";
 import crypto from "crypto";
 
 export const authOptions = {
@@ -18,6 +18,10 @@ export const authOptions = {
         token: { label: "Token", type: "text" }
       },
       async authorize(credentials) {
+        if (!isDbConfigured) {
+          throw new Error("DATABASE_URL is not configured.");
+        }
+
         if (credentials?.token) {
           const { verifyToken } = require("../../../../lib/jwt");
           const decoded = verifyToken(credentials.token);
@@ -82,13 +86,13 @@ export const authOptions = {
       }
     })
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "earnbyapps-nextauth-secret-key-12345",
   pages: {
     signIn: "/login"
   },
   callbacks: {
     async signIn({ user, account, profile }: { user: any; account: any; profile?: any }) {
-      if (user && user.email) {
+      if (user && user.email && isDbConfigured) {
         try {
           // Check if the user exists in our neon database users table
           const existingUsers = await sql`SELECT * FROM users WHERE email = ${user.email}`;
@@ -123,18 +127,24 @@ export const authOptions = {
     },
     async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
-        try {
-          const dbUsers = await sql`SELECT role, balance FROM users WHERE email = ${session.user.email}`;
-          if (dbUsers.length > 0) {
-            (session.user as any).role = dbUsers[0].role;
-            (session.user as any).balance = Number(dbUsers[0].balance);
-          } else {
+        if (isDbConfigured) {
+          try {
+            const dbUsers = await sql`SELECT role, balance FROM users WHERE email = ${session.user.email}`;
+            if (dbUsers.length > 0) {
+              (session.user as any).role = dbUsers[0].role;
+              (session.user as any).balance = Number(dbUsers[0].balance);
+            } else {
+              const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
+              (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
+              (session.user as any).balance = token.balance || 0;
+            }
+          } catch (err) {
+            console.error("Error retrieving user session role from database:", err);
             const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
             (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
             (session.user as any).balance = token.balance || 0;
           }
-        } catch (err) {
-          console.error("Error retrieving user session role from database:", err);
+        } else {
           const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
           (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
           (session.user as any).balance = token.balance || 0;

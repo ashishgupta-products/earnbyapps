@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { sql } from '../../../lib/db';
+import { sql, isDbConfigured } from '../../../lib/db';
 
 async function ensureSubmissionsTable() {
+  if (!isDbConfigured) return;
   await sql`
     CREATE TABLE IF NOT EXISTS submissions (
       id VARCHAR(255) PRIMARY KEY,
@@ -36,6 +37,10 @@ async function ensureSubmissionsTable() {
 }
 
 export async function GET(req: Request) {
+  if (!isDbConfigured) {
+    return NextResponse.json([]);
+  }
+
   try {
     await ensureSubmissionsTable();
     const { searchParams } = new URL(req.url);

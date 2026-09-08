@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { sql } from '../../../lib/db';
+import { sql, isDbConfigured } from '../../../lib/db';
+import { EARNING_APPS } from '../../../data/apps';
 
 function mapCampaign(c: any) {
   return {
@@ -37,6 +38,27 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '5');
     const country = searchParams.get('country') || 'All';
     const search = searchParams.get('search') || '';
+
+    if (!isDbConfigured) {
+      const filtered = EARNING_APPS.filter(app => {
+        const matchesCountry = country === 'All' || !app.targetCountry || app.targetCountry === 'Global' || app.targetCountry.toLowerCase() === country.toLowerCase();
+        const matchesSearch = !search || app.name.toLowerCase().includes(search.toLowerCase()) || app.category.toLowerCase().includes(search.toLowerCase());
+        return matchesCountry && matchesSearch;
+      });
+
+      if (!page) {
+        return NextResponse.json(filtered);
+      }
+
+      const pageNum = parseInt(page);
+      const offset = (pageNum - 1) * limit;
+      return NextResponse.json({
+        campaigns: filtered.slice(offset, offset + limit),
+        total: filtered.length,
+        page: pageNum,
+        totalPages: Math.ceil(filtered.length / limit)
+      });
+    }
 
     // Ensure columns exist (Self-migrating)
     try {

@@ -120,14 +120,31 @@ export default function UserProfileModal() {
           }
         }
       } catch (err) {
-        console.error('Error loading country payment methods:', err);
+        console.warn('Could not load remote payment methods, using defaults:', err);
+        if (active) {
+          const fallback = selectedCountry.name === 'India'
+            ? [
+                { value: 'UPI ID', label: '🇮🇳 UPI ID (GPay / PhonePe / BHIM)', placeholder: 'e.g. name@okhdfcbank' },
+                { value: 'Paytm Wallet Number', label: '📲 Paytm Wallet Mobile Number', placeholder: 'e.g. 9876543210' },
+                { value: 'Bank Transfer (India)', label: '🏦 Bank Account (A/C & IFSC)', placeholder: 'e.g. Account: 12345678, IFSC: SBIN000123' }
+              ]
+            : [
+                { value: 'PayPal Email', label: '💳 PayPal Email', placeholder: 'e.g. billing@paypal.com' },
+                { value: 'Crypto Wallet (USDT/USDC)', label: '🪙 Crypto Wallet Address (USDT/USDC)', placeholder: 'e.g. TRC20 or BEP20 address' },
+                { value: 'Bank Transfer (International)', label: '🏦 Bank Wire (IBAN & SWIFT)', placeholder: 'e.g. IBAN: GB29..., SWIFT: MIDL...' }
+              ];
+          setDynamicMethods(fallback);
+          if (fallback.length > 0 && !fallback.some((m: any) => m.value === payoutMethod)) {
+            setPayoutMethod(fallback[0].value);
+          }
+        }
       }
     }
     fetchMethods();
     return () => {
       active = false;
     };
-  }, [selectedCountry, payoutMethod]);
+  }, [selectedCountry.name]);
 
   if (!isOpen) return null;
 
