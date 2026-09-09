@@ -4,37 +4,176 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { useSession } from 'next-auth/react';
 
+type PayoutRail = 'upi' | 'bank' | 'paytm';
+
 export default function PartnerAccountPage() {
   const { userProfile, updateUserProfile } = useApp();
   const { data: session } = useSession();
 
   const [isEditing, setIsEditing] = useState(false);
   
-  // Local form states
+  // Local personal form states
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState('Male');
+
+  // Direct Indian Payout states
+  const [payoutRail, setPayoutRail] = useState<PayoutRail>('upi');
+  const [upiId, setUpiId] = useState('');
+  const [accountHolder, setAccountHolder] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [ifsc, setIfsc] = useState('');
+  const [paytmNumber, setPaytmNumber] = useState('');
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Sync form states with profile data
   useEffect(() => {
     if (userProfile) {
       setFullName(userProfile.fullName || '');
-      setPhone(userProfile.phone || '');
+      const rawPhone = userProfile.phone || '';
+      setPhone(rawPhone.replace('+91', '').trim());
       setGender(userProfile.gender || 'Male');
+
+      const rawDetails = (userProfile.paymentDetails || '').trim();
+      const savedMethod = (userProfile.paymentMethod || '').toLowerCase();
+
+      if (rawDetails.startsWith('{') || rawDetails.startsWith('[')) {
+        try {
+          const parsed = Array.isArray(JSON.parse(rawDetails))
+            ? (JSON.parse(rawDetails).find((p: any) => p.isPreferred)?.details || JSON.parse(rawDetails)[0]?.details)
+            : JSON.parse(rawDetails);
+
+          if (parsed.accountNumber || parsed.ifsc || savedMethod.includes('bank')) {
+            setPayoutRail('bank');
+            setAccountHolder(parsed.accountHolder || userProfile.fullName || '');
+            setBankName(parsed.bankName || '');
+            setAccountNumber(parsed.accountNumber || '');
+            setIfsc(parsed.ifsc || '');
+          } else if (parsed.paytmNumber || savedMethod.includes('paytm')) {
+            setPayoutRail('paytm');
+            setPaytmNumber(parsed.paytmNumber || rawPhone.replace('+91', '').trim() || '');
+          } else {
+            setPayoutRail('upi');
+            setUpiId(parsed.upiId || parsed.details || '');
+          }
+        } catch (e) {
+          if (rawDetails.includes('@')) {
+            setPayoutRail('upi');
+            setUpiId(rawDetails);
+          }
+        }
+      } else if (rawDetails.includes('@')) {
+        setPayoutRail('upi');
+        setUpiId(rawDetails);
+      } else if (/^\d{10}$/.test(rawDetails)) {
+        setPayoutRail('paytm');
+        setPaytmNumber(rawDetails);
+      }
     }
   }, [userProfile, isEditing]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (userProfile) {
-      updateUserProfile({
-        ...userProfile,
-        fullName,
-        phone,
-        gender
+    if (!userProfile) return;
+
+    let finalMethod = 'UPI ID';
+    let finalDetails = '';
+
+    if (payoutRail === 'upi') {
+      finalMethod = 'UPI ID';
+      finalDetails = JSON.stringify({ upiId: upiId.trim() });
+    } else if (payoutRail === 'bank') {
+      finalMethod = 'Bank Transfer (India)';
+      finalDetails = JSON.stringify({
+        accountHolder: accountHolder.trim() || fullName.trim(),
+        bankName: bankName.trim() || 'Bank of India',
+        accountNumber: accountNumber.trim(),
+        ifsc: ifsc.trim().toUpperCase()
       });
+    } else if (payoutRail === 'paytm') {
+      finalMethod = 'Paytm Wallet';
+      finalDetails = JSON.stringify({ paytmNumber: paytmNumber.replace(/[\s-+]/g, '').trim() });
     }
+
+    const cleanPhone = phone.replace(/[\s-+]/g, '').trim();
+    const updated = {
+      ...userProfile,
+      fullName: fullName.trim(),
+      phone: cleanPhone ? `+91 ${cleanPhone}` : userProfile.phone,
+      gender,
+      country: 'India',
+      paymentMethod: finalMethod,
+      paymentDetails: finalDetails
+    };
+
+    updateUserProfile(updated);
+
+    // Sync to backend DB
+    fetch('/api/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated)
+    }).catch(e => console.warn('Could not sync user profile to DB:', e));
+
     setIsEditing(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  // Helper to render current payout in view mode
+  const renderCurrentPayoutView = () => {
+    const rawDetails = (userProfile?.paymentDetails || '').trim();
+    if (!rawDetails || rawDetails === 'N/A') {
+      return (
+        <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+          Not configured. Click <em>Edit Profile</em> to set up direct Indian payouts.
+        </span>
+      );
+    }
+
+    try {
+      if (rawDetails.startsWith('{') || rawDetails.startsWith('[')) {
+        const parsed = Array.isArray(JSON.parse(rawDetails))
+          ? (JSON.parse(rawDetails).find((p: any) => p.isPreferred)?.details || JSON.parse(rawDetails)[0]?.details)
+          : JSON.parse(rawDetails);
+
+        if (parsed.upiId) {
+          return (
+            <div className="payout-pill-view">
+              <span className="payout-badge-tag upi-tag">⚡ UPI ID</span>
+              <strong className="payout-value-text">{parsed.upiId}</strong>
+            </div>
+          );
+        } else if (parsed.accountNumber) {
+          return (
+            <div className="payout-pill-view">
+              <span className="payout-badge-tag bank-tag">🏦 Bank Account</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <strong className="payout-value-text">{parsed.accountHolder} ({parsed.bankName || 'Bank'})</strong>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  A/C: ••••••••{parsed.accountNumber.slice(-4)} | IFSC: {parsed.ifsc}
+                </span>
+              </div>
+            </div>
+          );
+        } else if (parsed.paytmNumber) {
+          return (
+            <div className="payout-pill-view">
+              <span className="payout-badge-tag paytm-tag">📲 Paytm Wallet</span>
+              <strong className="payout-value-text">+91 {parsed.paytmNumber}</strong>
+            </div>
+          );
+        }
+      }
+    } catch (e) {}
+
+    return (
+      <div className="payout-pill-view">
+        <span className="payout-badge-tag upi-tag">⚡ {userProfile?.paymentMethod || 'Direct Payout'}</span>
+        <strong className="payout-value-text">{rawDetails}</strong>
+      </div>
+    );
   };
 
   return (
@@ -55,14 +194,42 @@ export default function PartnerAccountPage() {
           </div>
           <div className="profile-title-section">
             <h2>{userProfile?.fullName || 'Partner User'}</h2>
-            <p className="profile-role-badge">Campaign Partner</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <p className="profile-role-badge">Campaign Partner</p>
+              <span style={{
+                background: 'rgba(16, 185, 129, 0.12)',
+                color: 'var(--accent-emerald)',
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '3px 10px',
+                borderRadius: '99px',
+                border: '1px solid rgba(16, 185, 129, 0.25)'
+              }}>
+                🇮🇳 India Verified
+              </span>
+            </div>
           </div>
           {!isEditing && (
             <button onClick={() => setIsEditing(true)} className="edit-profile-btn">
-              ✏️ Edit Profile
+              ✏️ Edit Profile & Payouts
             </button>
           )}
         </div>
+
+        {saveSuccess && (
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: '8px',
+            padding: '10px 16px',
+            color: 'var(--accent-emerald)',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            marginTop: '16px'
+          }}>
+            ✓ Profile and Indian payout details saved successfully!
+          </div>
+        )}
 
         <hr className="divider" />
 
@@ -95,15 +262,27 @@ export default function PartnerAccountPage() {
 
             {/* Phone Number */}
             <div className="detail-item">
-              <span className="detail-label">Phone Number</span>
+              <span className="detail-label">Mobile Number (+91)</span>
               {isEditing ? (
-                <input 
-                  type="tel" 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="edit-input"
-                  placeholder="e.g. +91 9876543210"
-                />
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <span style={{
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid var(--border-color)',
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    color: 'var(--text-primary)'
+                  }}>🇮🇳 +91</span>
+                  <input 
+                    type="tel" 
+                    value={phone} 
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="edit-input"
+                    placeholder="9876543210"
+                    style={{ flex: 1 }}
+                  />
+                </div>
               ) : (
                 <span className="detail-value">{userProfile?.phone || 'Not Shared'}</span>
               )}
@@ -129,11 +308,158 @@ export default function PartnerAccountPage() {
             </div>
           </div>
 
+          <hr className="divider" style={{ margin: '16px 0' }} />
+
+          {/* Direct Indian Payout Section */}
+          <div className="payout-section-wrapper">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={{ fontSize: '1.3rem' }}>💳</span>
+              <h3 className="section-title" style={{ border: 'none', margin: 0, padding: 0 }}>
+                Direct Indian Payout Details
+              </h3>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.84rem', margin: '0 0 16px 0' }}>
+              Partner revenue payouts and referral earnings are disbursed directly into this Indian account.
+            </p>
+
+            {isEditing ? (
+              <div className="payout-edit-box">
+                <div className="payout-rail-tabs">
+                  <button
+                    type="button"
+                    onClick={() => setPayoutRail('upi')}
+                    className={`rail-tab-btn ${payoutRail === 'upi' ? 'active' : ''}`}
+                  >
+                    <span>⚡ UPI ID</span>
+                    <span className="tab-pill">Instant</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayoutRail('bank')}
+                    className={`rail-tab-btn ${payoutRail === 'bank' ? 'active' : ''}`}
+                  >
+                    <span>🏦 Bank Transfer</span>
+                    <span className="tab-pill">IMPS/NEFT</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPayoutRail('paytm')}
+                    className={`rail-tab-btn ${payoutRail === 'paytm' ? 'active' : ''}`}
+                  >
+                    <span>📲 Paytm Wallet</span>
+                    <span className="tab-pill">Mobile</span>
+                  </button>
+                </div>
+
+                {payoutRail === 'upi' && (
+                  <div className="rail-input-block">
+                    <label>UPI ID / VPA Handle</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. partner@okhdfcbank or 9876543210@paytm"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="edit-input"
+                      required
+                    />
+                    <span className="hint-msg">✓ Instant zero-fee payouts directly to Google Pay, PhonePe, Paytm, or BHIM.</span>
+                  </div>
+                )}
+
+                {payoutRail === 'bank' && (
+                  <div className="rail-input-block">
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                      <div>
+                        <label>Account Holder Name</label>
+                        <input 
+                          type="text"
+                          placeholder="As per bank passbook"
+                          value={accountHolder}
+                          onChange={(e) => setAccountHolder(e.target.value)}
+                          className="edit-input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label>Bank Name</label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. State Bank of India, HDFC"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          className="edit-input"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '10px' }}>
+                      <div>
+                        <label>Account Number</label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. 123456789012"
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value)}
+                          className="edit-input"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label>IFSC Code</label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. SBIN0001234"
+                          value={ifsc}
+                          onChange={(e) => setIfsc(e.target.value.toUpperCase())}
+                          className="edit-input"
+                          maxLength={11}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <span className="hint-msg">✓ Direct IMPS / NEFT settlement to any Indian commercial or rural bank.</span>
+                  </div>
+                )}
+
+                {payoutRail === 'paytm' && (
+                  <div className="rail-input-block">
+                    <label>Paytm Registered Mobile Number</label>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <span style={{
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid var(--border-color)',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: 'var(--text-primary)'
+                      }}>🇮🇳 +91</span>
+                      <input 
+                        type="tel"
+                        placeholder="10-digit mobile number"
+                        value={paytmNumber}
+                        onChange={(e) => setPaytmNumber(e.target.value)}
+                        className="edit-input"
+                        style={{ flex: 1 }}
+                        required
+                      />
+                    </div>
+                    <span className="hint-msg">✓ Instant wallet top-up for KYC-verified Paytm accounts.</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="payout-view-container">
+                {renderCurrentPayoutView()}
+              </div>
+            )}
+          </div>
+
           {/* Form Actions */}
           {isEditing && (
             <div className="form-actions">
               <button type="submit" className="save-btn">
-                💾 Save Changes
+                💾 Save Profile & Payout Details
               </button>
               <button 
                 type="button" 
@@ -227,7 +553,7 @@ export default function PartnerAccountPage() {
           border: 0;
           height: 1px;
           background: var(--border-color);
-          margin: 32px 0;
+          margin: 28px 0;
         }
         .details-section {
           display: flex;
@@ -253,100 +579,181 @@ export default function PartnerAccountPage() {
           gap: 6px;
         }
         .detail-label {
-          font-size: 0.75rem;
+          font-size: 0.82rem;
           color: var(--text-secondary);
+          font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
         .detail-value {
-          font-size: 0.95rem;
+          font-size: 1rem;
           color: var(--text-primary);
           font-weight: 500;
         }
         .text-muted-email {
-          font-size: 0.95rem;
+          color: var(--text-muted);
+        }
+        .edit-input, .edit-select {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-color);
+          color: var(--text-primary);
+          padding: 10px 14px;
+          border-radius: 8px;
+          font-size: 0.92rem;
+          font-family: var(--font-primary);
+          outline: none;
+          transition: border-color 0.2s;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .edit-input:focus, .edit-select:focus {
+          border-color: var(--accent-indigo);
+        }
+
+        /* Payout Section */
+        .payout-section-wrapper {
+          background: rgba(255, 255, 255, 0.02);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 20px;
+        }
+        .payout-edit-box {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .payout-rail-tabs {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+          margin-bottom: 8px;
+        }
+        .rail-tab-btn {
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid var(--border-color);
           color: var(--text-secondary);
-          opacity: 0.8;
+          padding: 10px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          transition: all 0.2s;
+        }
+        .rail-tab-btn:hover {
+          border-color: var(--accent-indigo);
+          color: var(--text-primary);
+        }
+        .rail-tab-btn.active {
+          background: rgba(79, 70, 229, 0.12);
+          border-color: var(--accent-indigo);
+          color: var(--text-primary);
+        }
+        .tab-pill {
+          font-size: 0.65rem;
+          padding: 1px 6px;
+          border-radius: 99px;
+          background: rgba(255, 255, 255, 0.06);
+          color: var(--accent-cyan);
+          font-weight: 700;
+        }
+        .rail-tab-btn.active .tab-pill {
+          background: var(--accent-indigo);
+          color: #ffffff;
+        }
+        .rail-input-block {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .rail-input-block label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .hint-msg {
+          font-size: 0.76rem;
+          color: var(--accent-emerald);
           font-weight: 500;
         }
-        .edit-input {
-          width: 100%;
-          max-width: 450px;
-          padding: 10px 14px;
-          border-radius: 8px;
-          background: var(--bg-dark);
+        .payout-pill-view {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          background: rgba(255, 255, 255, 0.03);
           border: 1px solid var(--border-color);
+          padding: 12px 18px;
+          border-radius: 10px;
+        }
+        .payout-badge-tag {
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 4px 10px;
+          border-radius: 6px;
+        }
+        .upi-tag {
+          background: rgba(16, 185, 129, 0.15);
+          color: var(--accent-emerald);
+          border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .bank-tag {
+          background: rgba(79, 70, 229, 0.15);
+          color: var(--accent-indigo);
+          border: 1px solid rgba(79, 70, 229, 0.3);
+        }
+        .paytm-tag {
+          background: rgba(14, 165, 233, 0.15);
+          color: var(--accent-cyan);
+          border: 1px solid rgba(14, 165, 233, 0.3);
+        }
+        .payout-value-text {
+          font-size: 0.95rem;
           color: var(--text-primary);
-          font-size: 0.9rem;
-          transition: border-color 0.2s;
         }
-        .edit-input:focus {
-          border-color: var(--accent-indigo);
-          outline: none;
-        }
-        .edit-select {
-          width: 100%;
-          max-width: 450px;
-          padding: 10px 14px;
-          border-radius: 8px;
-          background: var(--bg-dark);
-          border: 1px solid var(--border-color);
-          color: var(--text-primary);
-          font-size: 0.9rem;
-          cursor: pointer;
-        }
-        .edit-select:focus {
-          border-color: var(--accent-indigo);
-          outline: none;
-        }
+
         .form-actions {
           display: flex;
           gap: 12px;
           margin-top: 12px;
         }
         .save-btn {
-          background: var(--accent-indigo);
+          background: linear-gradient(135deg, var(--accent-indigo), #0ea5e9);
+          color: #ffffff;
           border: none;
-          color: white;
-          padding: 10px 20px;
+          padding: 12px 24px;
           border-radius: 8px;
           font-weight: 600;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: opacity 0.2s;
         }
         .save-btn:hover {
-          opacity: 0.9;
-          transform: translateY(-1px);
+          opacity: 0.92;
         }
         .cancel-btn {
           background: transparent;
           border: 1px solid var(--border-color);
           color: var(--text-secondary);
-          padding: 10px 20px;
+          padding: 12px 20px;
           border-radius: 8px;
           font-weight: 600;
-          font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.2s;
         }
         .cancel-btn:hover {
-          border-color: var(--text-secondary);
-          background: rgba(255,255,255,0.02);
+          color: var(--text-primary);
         }
-        @media (max-width: 768px) {
+
+        @media (max-width: 640px) {
           .details-list {
             grid-template-columns: 1fr;
           }
-          .account-header {
-            flex-direction: column;
-            text-align: center;
-          }
-          .edit-profile-btn {
-            width: 100%;
-          }
-          .edit-input, .edit-select {
-            max-width: 100%;
+          .payout-rail-tabs {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>

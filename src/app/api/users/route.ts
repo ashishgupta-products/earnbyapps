@@ -238,3 +238,31 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const body = await request.json();
+    const { email, fullName, phone, gender, paymentMethod, paymentDetails } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: 'User email is required' }, { status: 400 });
+    }
+
+    await sql`
+      UPDATE users 
+      SET 
+        full_name = COALESCE(${fullName || null}, full_name),
+        phone = COALESCE(${phone || null}, phone),
+        gender = COALESCE(${gender || null}, gender),
+        payment_method = COALESCE(${paymentMethod || null}, payment_method),
+        payment_details = COALESCE(${paymentDetails || null}, payment_details)
+      WHERE LOWER(email) = ${email.toLowerCase()}
+    `;
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error in PATCH /api/users:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

@@ -40,16 +40,16 @@ export default function Header() {
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
 
-          {/* User role menu (Auth mockup) */}
+          {/* User role menu (Auth dropdown) */}
           <div className="auth-menu-container">
-            {session && session.user ? (
+            {(session && session.user) || userProfile ? (
               <>
                 <button 
                   className="role-selector-btn" 
                   onClick={() => setShowAuthDropdown(!showAuthDropdown)}
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  {session.user.image ? (
+                  {session?.user?.image ? (
                     <img 
                       src={session.user.image} 
                       alt="User avatar" 
@@ -59,7 +59,7 @@ export default function Header() {
                     <span>👤</span>
                   )}
                   <span className="role-text-lbl">
-                    {session.user.name || 'User'}
+                    {session?.user?.name || userProfile?.fullName || 'My Account'}
                   </span>
                   <span style={{ fontSize: '0.6rem', opacity: 0.6 }}>▼</span>
                 </button>
@@ -67,24 +67,29 @@ export default function Header() {
                 {showAuthDropdown && (
                   <div className="glass-card auth-dropdown">
                     <div style={{ padding: '8px', fontSize: '0.8rem', background: 'rgba(255,255,255,0.02)', borderRadius: '6px', border: '1px solid var(--border-color)', margin: '4px 0' }}>
-                      <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '4px' }}>Google Account</div>
+                      <div style={{ fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                        {session?.user ? 'Google Account' : 'Account Profile'}
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '4px' }}>
-                        {session.user.image ? (
+                        {session?.user?.image ? (
                           <img 
                             src={session.user.image} 
                             alt="Google avatar" 
                             style={{ width: '16px', height: '16px', borderRadius: '50%', objectFit: 'cover' }} 
                           />
                         ) : (
-                          <span>👤</span>
+                          <span>🇮🇳</span>
                         )}
-                        <span>{session.user.name}</span>
+                        <span>{session?.user?.name || userProfile?.fullName || 'Earner'}</span>
                       </div>
-                      <div style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📧 {session.user.email}</div>
+                      <div style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        📧 {session?.user?.email || userProfile?.email || 'N/A'}
+                      </div>
                       <button 
                         onClick={() => {
                           setShowAuthDropdown(false);
-                          signOut();
+                          if (session) signOut();
+                          logout();
                         }}
                         className="dropdown-item link-item"
                         style={{ padding: '6px 0 0', marginTop: '8px', border: 'none', background: 'transparent', width: '100%', textAlign: 'left', fontSize: '0.78rem', color: '#ef4444', fontWeight: 'bold', cursor: 'pointer' }}
@@ -92,6 +97,27 @@ export default function Header() {
                         🚪 Sign Out
                       </button>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setShowAuthDropdown(false);
+                        window.dispatchEvent(new CustomEvent('open-profile-modal'));
+                      }}
+                      className="dropdown-item link-item"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        width: '100%',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        font: 'inherit'
+                      }}
+                    >
+                      💳 Payout & Profile Settings
+                    </button>
 
                     {userRole === 'user' && (
                       <Link href="/partner/create-campaign" onClick={() => setShowAuthDropdown(false)} className="dropdown-item link-item">

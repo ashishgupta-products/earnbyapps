@@ -81,7 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { id: 'Manage Banners', label: 'Manage Banners', href: '/admin/banners', icon: '🖼️' },
     { id: 'Manage Blog', label: 'Manage Blog', href: '/admin/blog', icon: '📰' },
     { id: 'Manage Referrals', label: 'Manage Referrals', href: '/admin/referrals', icon: '🔗' },
-    { id: 'Payment Options', label: 'Payment Options', href: '/admin/payment-options', icon: '⚙' }
+    { id: 'Wallet & Payouts', label: 'Wallet & Payouts', href: '/admin/wallet', icon: '💰' }
   ];
 
   const activeItem = menuItems.find(item => {
