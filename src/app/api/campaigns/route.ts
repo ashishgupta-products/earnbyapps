@@ -18,9 +18,9 @@ function mapCampaign(c: any) {
     tags: c.tags ? c.tags.split(',') : [],
     actionText: `Launch ${c.name}`,
     externalUrl: c.external_url || '',
-    targetCountry: c.target_country || 'Global',
-    currency: c.currency || 'USD',
-    currencySymbol: c.currency_symbol || '$',
+    targetCountry: c.target_country || 'India',
+    currency: c.currency || 'INR',
+    currencySymbol: c.currency_symbol || '₹',
     targetCompletions: Number(c.target_completions || 1000),
     videoUrl: c.video_url || undefined,
     reward: Number(c.reward),
@@ -148,7 +148,7 @@ export async function POST(request: Request) {
 
     const platformsStr = Array.isArray(platforms) ? platforms.join(',') : (platforms || 'Web');
     const tagsStr = Array.isArray(tags) ? tags.join(',') : (tags || '');
-    const rewardNum = Number(reward) || 0.50;
+    const rewardNum = Number(reward) || 50.00;
     const compsCount = Number(targetCompletions) || 1000;
     const finalId = id || `custom-${Date.now()}`;
     const finalAssignedEmail = assignedEmail || null;
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
       ) VALUES (
         ${finalId}, ${name}, ${category}, ${platformsStr}, ${earningRate}, ${rewardNum},
         ${description}, ${longDescription || description}, ${tagsStr}, ${externalUrl},
-        ${targetCountry || 'Global'}, ${currency || 'USD'}, ${currencySymbol || '$'}, ${compsCount}, ${videoUrl || null}, ${finalAssignedEmail}, ${active}, ${finalLogoUrl}, ${finalReferralCode}
+        ${targetCountry || 'India'}, ${currency || 'INR'}, ${currencySymbol || '₹'}, ${compsCount}, ${videoUrl || null}, ${finalAssignedEmail}, ${active}, ${finalLogoUrl}, ${finalReferralCode}
       )
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name,

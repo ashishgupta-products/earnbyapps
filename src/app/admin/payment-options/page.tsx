@@ -19,7 +19,7 @@ export default function PaymentOptionsPage() {
   const [loading, setLoading] = useState(true);
   
   // Form fields
-  const [newCountry, setNewCountry] = useState('Global');
+  const [newCountry, setNewCountry] = useState('India');
   const [newName, setNewName] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [newPlaceholder, setNewPlaceholder] = useState('');
@@ -42,12 +42,12 @@ export default function PaymentOptionsPage() {
   };
 
   // Search dropdown states
-  const [countrySearch, setCountrySearch] = useState('Global');
+  const [countrySearch, setCountrySearch] = useState('India');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  // Min withdrawal threshold
-  const [minWithdrawal, setMinWithdrawal] = useState(50);
+  // Min withdrawal threshold (INR)
+  const [minWithdrawal, setMinWithdrawal] = useState(100);
 
   useEffect(() => {
     // Load local storage threshold
@@ -156,8 +156,8 @@ export default function PaymentOptionsPage() {
         setNewLabel('');
         setNewPlaceholder('');
         setNewPlaceholderType('text');
-        setNewCountry('Global');
-        setCountrySearch('Global');
+        setNewCountry('India');
+        setCountrySearch('India');
         setCustomFields([]);
         fetchMethods();
       } else {

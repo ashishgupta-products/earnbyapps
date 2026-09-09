@@ -29,8 +29,8 @@ export default function AdminAllCampaigns() {
   const [editingApp, setEditingApp] = useState<EarningApp | null>(null);
   const [editName, setEditName] = useState('');
   const [editCategory, setEditCategory] = useState<any>('Gaming');
-  const [editPayout, setEditPayout] = useState('0.50');
-  const [editCountry, setEditCountry] = useState('Global');
+  const [editPayout, setEditPayout] = useState('50.00');
+  const [editCountry, setEditCountry] = useState('India');
   const [editCompletions, setEditCompletions] = useState('1000');
   const [editLink, setEditLink] = useState('');
   const [editVideo, setEditVideo] = useState('');
@@ -74,8 +74,8 @@ export default function AdminAllCampaigns() {
     if (editingApp) {
       setEditName(editingApp.name);
       setEditCategory(editingApp.category);
-      setEditPayout(editingApp.reward?.toString() || '0.50');
-      setEditCountry(editingApp.targetCountry || 'Global');
+      setEditPayout(editingApp.reward?.toString() || '50.00');
+      setEditCountry(editingApp.targetCountry || 'India');
       setEditCompletions(editingApp.targetCompletions?.toString() || '1000');
       setEditLink(editingApp.externalUrl || '');
       setEditVideo(editingApp.videoUrl || '');
@@ -268,7 +268,7 @@ export default function AdminAllCampaigns() {
                       <strong style={{ display: 'block' }}>{app.name}</strong>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
                         <span style={{ fontSize: '0.7rem', padding: '1px 6px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          {flag} {app.targetCountry || 'Global'}
+                          {flag} {app.targetCountry || 'India'}
                         </span>
                       </div>
                     </td>

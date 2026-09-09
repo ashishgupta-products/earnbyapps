@@ -175,7 +175,7 @@ export default function PartnerVerifications() {
           {filteredVerifications.length > 0 ? (
             filteredVerifications.map((sub) => {
               const subApp = apps.find(a => a.id === sub.appId);
-              const currencySymbol = subApp?.currencySymbol || '$';
+              const currencySymbol = subApp?.currencySymbol || '₹';
               return (
                 <div 
                   key={sub.id}
@@ -270,7 +270,7 @@ export default function PartnerVerifications() {
               <div>
                 <span className="meta-lbl">Reward Amount</span>
                 <strong className="meta-val" style={{ color: 'var(--accent-emerald)' }}>
-                  +{(apps.find(a => a.id === selectedSub.appId)?.currencySymbol || '$')}{selectedSub.reward.toFixed(2)}
+                  +{(apps.find(a => a.id === selectedSub.appId)?.currencySymbol || '₹')}{selectedSub.reward.toFixed(2)}
                 </strong>
               </div>
               <div>

@@ -220,14 +220,14 @@ export default function TaskDetails({ params }: PageProps) {
               <div className="meta-stats-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
                 <span>Rating: <strong className="highlight-amber">★ {app.rating}</strong></span>
                 <span>Difficulty: <strong>{app.difficulty}</strong></span>
-                <span>Target Regions: <strong style={{ color: 'var(--accent-teal)' }}>🌍 {app.targetCountry || 'Global'} ({app.currency || 'USD'})</strong></span>
+                <span>Target Regions: <strong style={{ color: 'var(--accent-teal)' }}>🇮🇳 {app.targetCountry || 'India'} ({app.currency || 'INR'})</strong></span>
               </div>
             </div>
             
             <div className="header-right">
               <span className="est-earning-lbl">Reward Payout</span>
               <strong className="est-earning-val">
-                {app.currencySymbol ? `${app.currencySymbol} ${app.reward?.toFixed(2) || app.earningRate}` : `₹ ${(app.reward ? app.reward * 80 : 100).toFixed(0)}`}
+                {app.currencySymbol ? `${app.currencySymbol} ${app.reward?.toFixed(2) || app.earningRate}` : `₹ ${(app.reward || 50).toFixed(2)}`}
               </strong>
             </div>
           </div>

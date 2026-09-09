@@ -7,8 +7,8 @@ import UserProfileModal from "../components/UserProfileModal";
 import SessionProviderWrapper from "../components/SessionProviderWrapper";
 
 export const metadata: Metadata = {
-  title: "EarnByApps | Discover Premium Money Earning Apps",
-  description: "Explore the highest paying micro-task, gaming, survey, and passive income apps. Calculate your earnings, compare options, and complete tasks to start earning cash instantly.",
+  title: "EarnByApps | India's #1 App Testing & Real Cash Earning Platform",
+  description: "Earn real cash via UPI, Paytm, and Direct Bank Transfer by testing, reviewing, and installing top apps in India. Fast payouts and verified campaigns.",
 };
 
 export default function RootLayout({

@@ -126,12 +126,13 @@ export const countries: Country[] = [
   { name: 'Zimbabwe', code: '+263', flag: '🇿🇼', currency: 'ZWL', symbol: '$' }
 ];
 
-export const getCountryCurrency = (countryName: string): { currency: string; symbol: string } => {
-  if (countryName === 'Global') {
-    return { currency: 'USD', symbol: '$' };
+export const getCountryCurrency = (countryName?: string): { currency: string; symbol: string } => {
+  if (!countryName || countryName.toLowerCase() === 'india' || countryName.toLowerCase() === 'global') {
+    return { currency: 'INR', symbol: '₹' };
   }
   const match = countries.find(c => c.name.toLowerCase() === countryName.toLowerCase());
   return match 
     ? { currency: match.currency, symbol: match.symbol } 
-    : { currency: 'USD', symbol: '$' };
+    : { currency: 'INR', symbol: '₹' };
 };
+

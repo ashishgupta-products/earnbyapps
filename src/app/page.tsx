@@ -66,8 +66,8 @@ export default function Home() {
       a: "Every submission requires proof — such as mandatory in-app screenshots, transaction IDs, or video screen captures. Our automated fraud-detection algorithms cross-check device signatures and IP uniqueness, followed by human audit before any payout is released."
     },
     {
-      q: "Can I target specific countries and operating systems?",
-      a: "Yes! You can geo-target your campaigns to India, United States, United Kingdom, or Global markets, and choose specific platforms including Android, iOS, or Web."
+      q: "Can I target specific Indian regions and operating systems?",
+      a: "Yes! You can target your campaigns across India and choose specific platforms including Android, iOS, or Web."
     },
     {
       q: "How quickly will my campaign start receiving real completions?",
@@ -75,7 +75,7 @@ export default function Home() {
     },
     {
       q: "What payment methods are supported for funding and payouts?",
-      a: "We support instant UPI (Google Pay, PhonePe, Paytm, BHIM), Net Banking, Credit/Debit Cards, PayPal, and Crypto (USDT/USDC) for seamless deposits and withdrawals worldwide."
+      a: "We support instant UPI (Google Pay, PhonePe, Paytm, BHIM), Net Banking, and Paytm Wallet for instant rupee payouts across India."
     }
   ];
 
@@ -88,7 +88,7 @@ export default function Home() {
           
           {/* Capsule Badge */}
           <div className="hero-capsule">
-            <span className="live-dot"></span> Powering User Acquisition Globally
+            <span className="live-dot"></span> 🇮🇳 Powering Real User Acquisition Across India
           </div>
 
           {/* Main Header title */}
@@ -157,7 +157,7 @@ export default function Home() {
           <div className="stat-card">
             <div className="stat-number">₹45L+</div>
             <div className="stat-label">Paid Out to Real Earners</div>
-            <div className="stat-sub">Instant UPI & Global Transfers</div>
+            <div className="stat-sub">Instant UPI, Paytm & NetBanking</div>
           </div>
           <div className="stat-card">
             <div className="stat-number">3.2x</div>
@@ -190,12 +190,12 @@ export default function Home() {
 
           <div className="step-card featured-step">
             <div className="step-number-bubble">02</div>
-            <div className="step-icon">🌍</div>
-            <h3 className="step-title">Target Real Global Users</h3>
+            <div className="step-icon">🇮🇳</div>
+            <h3 className="step-title">Target Real Indian Users</h3>
             <p className="step-desc">
-              Your campaign is distributed to verified users matched by country (India, US, UK, Global) and platform (Android, iOS, or Web).
+              Your campaign is distributed to verified real users across India filtered by platform (Android, iOS, or Web).
             </p>
-            <div className="step-tag">Geo & OS Filtered</div>
+            <div className="step-tag">Pan-India & OS Filtered</div>
           </div>
 
           <div className="step-card">

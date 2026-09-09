@@ -19,19 +19,19 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- 2. Create Campaigns Table
 CREATE TABLE IF NOT EXISTS campaigns (
-    id VARCHAR(255) PRIMARY KEY, -- e.g. 'groww', 'swagbucks'
+    id VARCHAR(255) PRIMARY KEY, -- e.g. 'groww', 'phonepe'
     name VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
     platforms VARCHAR(255) NOT NULL, -- e.g. 'iOS,Android,Web'
     earning_rate VARCHAR(255),
-    reward NUMERIC(10, 2) NOT NULL DEFAULT 5.00,
+    reward NUMERIC(10, 2) NOT NULL DEFAULT 50.00,
     description TEXT,
     long_description TEXT,
     tags VARCHAR(255), -- e.g. 'Popular,Fast Payout'
     external_url TEXT,
-    target_country VARCHAR(100) DEFAULT 'Global',
-    currency VARCHAR(10) DEFAULT 'USD',
-    currency_symbol VARCHAR(10) DEFAULT '$',
+    target_country VARCHAR(100) DEFAULT 'India',
+    currency VARCHAR(10) DEFAULT 'INR',
+    currency_symbol VARCHAR(10) DEFAULT '₹',
     target_completions INTEGER DEFAULT 1000,
     video_url TEXT,
     logo_url TEXT,
@@ -70,14 +70,17 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 -- Seed Initial Admin User
-INSERT INTO users (email, full_name, role, balance)
-VALUES ('admin@earnbyapps.com', 'System Admin', 'admin', 100.00)
+INSERT INTO users (email, full_name, role, balance, country)
+VALUES ('admin@earnbyapps.com', 'System Admin', 'admin', 500.00, 'India')
 ON CONFLICT (email) DO NOTHING;
 
--- Seed Initial Earning Campaigns
-INSERT INTO campaigns (id, name, category, platforms, earning_rate, reward, description, long_description, tags, external_url)
+-- Seed Initial Earning Campaigns (India Focused)
+INSERT INTO campaigns (id, name, category, platforms, earning_rate, reward, description, long_description, tags, external_url, target_country, currency, currency_symbol)
 VALUES 
-('swagbucks', 'Swagbucks', 'Surveys', 'iOS,Android,Web', '$5.00 / completion', 5.00, 'Earn SB points for completing the Gold survey profile.', 'Complete demographics profile survey to redeem SB rewards.', 'Popular,Low Payout', 'https://swagbucks.com'),
-('mistplay', 'Mistplay', 'Gaming', 'Android', '$8.50 / completion', 8.50, 'Play new mobile games and earn units.', 'Install games and reach the specified in-game achievements.', 'Android Only,Fun', 'https://mistplay.com'),
-('usertesting', 'UserTesting', 'App Testing', 'iOS,Android,Web', '$10.00 / test', 10.00, 'Test websites and apps and get paid for feedback.', 'Speak thoughts aloud during website reviews.', 'High Paying,PayPal', 'https://usertesting.com')
+('groww', 'Groww: Stocks & Mutual Funds', 'App Install & Sign Up', 'Android,iOS,Web', '₹150.00 / signup', 150.00, 'Open a free Demat account & complete KYC on Groww.', 'Register and complete your identity verification to start investing and earn cash.', 'Finance,High Reward,Instant KYC', 'https://groww.in', 'India', 'INR', '₹'),
+('phonepe', 'PhonePe UPI Payments', 'App Install & Sign Up', 'Android,iOS', '₹50.00 / setup', 50.00, 'Install PhonePe and link bank account for first UPI transaction.', 'Connect your Indian bank account and complete a test transaction of ₹1 or more.', 'UPI,Fast Payout,Popular', 'https://phonepe.com', 'India', 'INR', '₹'),
+('angelone', 'Angel One Demat & Trading', 'App Install & Sign Up', 'Android,iOS,Web', '₹200.00 / account', 200.00, 'Open a zero-brokerage Demat account on Angel One.', 'Submit online Aadhaar and PAN KYC verification to claim your reward.', 'Finance,Top Earner,Trending', 'https://angelone.in', 'India', 'INR', '₹'),
+('winzo', 'WinZO Games', 'Gaming', 'Android', '₹35.00 / play', 35.00, 'Install WinZO app and play 3 casual mobile games.', 'Download the APK launcher, play 3 fun games, and upload gameplay screenshot proof.', 'Android Only,Fun,Instant Payout', 'https://winzogames.com', 'India', 'INR', '₹'),
+('swagbucks-in', 'Swagbucks India', 'Surveys', 'Android,iOS,Web', '₹100.00 / survey', 100.00, 'Complete Indian consumer demographic surveys for instant cash.', 'Answer market research questions about products in India and redeem points.', 'Surveys,Easy,Verified', 'https://swagbucks.com', 'India', 'INR', '₹'),
+('rozdhan', 'Roz Dhan: News & Earn', 'Passive', 'Android', '₹25.00 / install', 25.00, 'Read news articles and check in daily on Roz Dhan.', 'Install the Roz Dhan app, log in, and browse trending articles for 3 days.', 'Passive,Daily Checkin,Simple', 'https://rozdhan.com', 'India', 'INR', '₹')
 ON CONFLICT (id) DO NOTHING;

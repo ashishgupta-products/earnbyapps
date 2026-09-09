@@ -15,7 +15,7 @@ export async function GET() {
         name VARCHAR(255) NOT NULL,
         label VARCHAR(255) NOT NULL,
         placeholder VARCHAR(255) NOT NULL,
-        target_country VARCHAR(100) DEFAULT 'Global',
+        target_country VARCHAR(100) DEFAULT 'India',
         is_active BOOLEAN DEFAULT true
       );
     `;
@@ -43,17 +43,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, label, placeholder, targetCountry, isActive, fields, placeholderType } = body;
 
-    if (!name || !label || !placeholder || !targetCountry) {
+    if (!name || !label || !placeholder) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    const finalTargetCountry = targetCountry || 'India';
     const active = isActive !== undefined ? isActive : true;
     const fieldsStr = fields ? (typeof fields === 'string' ? fields : JSON.stringify(fields)) : null;
     const pType = placeholderType || 'text';
 
     const result = await sql`
       INSERT INTO payment_methods (name, label, placeholder, target_country, is_active, fields, placeholder_type)
-      VALUES (${name}, ${label}, ${placeholder}, ${targetCountry}, ${active}, ${fieldsStr}, ${pType})
+      VALUES (${name}, ${label}, ${placeholder}, ${finalTargetCountry}, ${active}, ${fieldsStr}, ${pType})
       RETURNING id, name, label, placeholder, target_country as "targetCountry", is_active as "isActive", fields, placeholder_type as "placeholderType"
     `;
 

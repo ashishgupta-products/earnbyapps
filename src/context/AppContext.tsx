@@ -115,33 +115,36 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const INITIAL_LEADS: PartnershipLead[] = [
   {
     id: 'lead-1',
-    partnerName: 'Alice Partner',
-    partnerEmail: 'alice@partner.com',
-    appName: 'Mistplay Partner Campaign',
-    category: 'Gaming',
-    platforms: ['Android'],
-    earningRate: '$0.50 / action',
-    averageEarningsPerDay: 0.5,
-    description: 'Play and earn units by running mobile games.',
-    longDescription: 'A custom campaign suggested by Alice for testing mobile games on Android devices.',
-    tags: ['Android Only', 'Gaming'],
-    actionText: 'Open Mistplay Partner Campaign',
+    partnerName: 'Vikram Malhotra',
+    partnerEmail: 'vikram@growwpartner.in',
+    appName: 'Groww Demat Onboarding Campaign',
+    category: 'App Install & Sign Up',
+    platforms: ['Android', 'iOS'],
+    earningRate: '₹150.00 / action',
+    averageEarningsPerDay: 150.0,
+    description: 'Install and complete KYC on Groww.',
+    longDescription: 'A custom partner campaign to acquire verified KYC Demat accounts in India.',
+    tags: ['Finance', 'KYC', 'High Value'],
+    actionText: 'Open Groww Partner Campaign',
     suggestedTasks: [
-      { id: 'lead-task-1', title: 'Complete first 15 mins play', description: 'Install Coin Master and play for 15 minutes.', reward: 1.20 }
+      { id: 'lead-task-1', title: 'Complete Aadhaar KYC', description: 'Finish in-app Demat KYC verification.', reward: 150.00 }
     ],
     status: 'New',
     createdAt: '15 Jun 2026',
     targetCompletions: 2000,
-    costPerCompletion: 0.50,
-    totalBudget: 1000
+    costPerCompletion: 150.00,
+    totalBudget: 300000,
+    targetCountry: 'India',
+    currency: 'INR',
+    currencySymbol: '₹'
   }
 ];
 
 const INITIAL_SUBMISSIONS: Submission[] = [
-  { id: 'sub-1', userName: 'Test User', userEmail: 'user@example.com', appName: 'Swagbucks', appId: 'swagbucks', taskId: 'sb-2', taskTitle: 'Take Daily Gold Survey', reward: 2.50, proof: 'Completed survey gold #4321', time: '10 mins ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-2', userName: 'Raj Patel', userEmail: 'raj@gmail.com', appName: 'Mistplay', appId: 'mistplay', taskId: 'mp-2', taskTitle: 'Reach Level 10 in Raid Shadow Legends', reward: 6.50, proof: 'Profile level screenshot uploaded', time: '1 hour ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-3', userName: 'Sonia Sharma', userEmail: 'sonia@gmail.com', appName: 'Prime Opinion', appId: 'primeopinion', taskId: 'po-2', taskTitle: 'Reach Level 2', reward: 1.00, proof: 'Verified level 2 dashboard screenshot', time: '4 hours ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-4', userName: 'Amit Verma', userEmail: 'amit@gmail.com', appName: 'Honeygain', appId: 'honeygain', taskId: 'hg-2', taskTitle: 'Share First 10GB of Data', reward: 2.50, proof: 'Client ID: hg_98248924823', time: '1 day ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' }
+  { id: 'sub-1', userName: 'Rahul Sharma', userEmail: 'rahul@example.com', appName: 'Groww: Stocks & Mutual Funds', appId: 'groww', taskId: 'gw-1', taskTitle: 'Complete KYC Registration', reward: 150.00, proof: 'KYC verified screenshot #4321', time: '10 mins ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
+  { id: 'sub-2', userName: 'Raj Patel', userEmail: 'raj@gmail.com', appName: 'PhonePe UPI Payments', appId: 'phonepe', taskId: 'pp-1', taskTitle: 'Setup First UPI Payment', reward: 50.00, proof: 'UPI linked screenshot uploaded', time: '1 hour ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
+  { id: 'sub-3', userName: 'Sonia Sharma', userEmail: 'sonia@gmail.com', appName: 'Swagbucks India Surveys', appId: 'swagbucks-in', taskId: 'sb-1', taskTitle: 'Complete Consumer Profile', reward: 100.00, proof: 'Verified profile completion dashboard', time: '4 hours ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' },
+  { id: 'sub-4', userName: 'Amit Verma', userEmail: 'amit@gmail.com', appName: 'WinZO Games', appId: 'winzo', taskId: 'wz-1', taskTitle: 'Play 3 Casual Matches', reward: 35.00, proof: 'WinZO profile ID: wz_98248924823', time: '1 day ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' }
 ];
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
@@ -153,7 +156,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   const [partnershipLeads, setPartnershipLeads] = useState<PartnershipLead[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [verificationAssignments, setVerificationAssignments] = useState<VerificationAssignment[]>([]);
-  const [walletBalance, setWalletBalance] = useState<number>(124.50);
+  const [walletBalance, setWalletBalance] = useState<number>(250.00);
   const [completedTaskIds, setCompletedTaskIds] = useState<string[]>([]);
   const [theme, setTheme] = useState<AppTheme>('light');
   const [isInitialized, setIsInitialized] = useState(false);

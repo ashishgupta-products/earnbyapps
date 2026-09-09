@@ -33,7 +33,7 @@ export default function CombinedPartnerCampaigns() {
         completed: lead.status === 'Converted' ? completedCount : 0,
         cost: lead.costPerCompletion,
         status: lead.status === 'Converted' ? 'Active' : lead.status,
-        currencySymbol: lead.currencySymbol || '$'
+        currencySymbol: lead.currencySymbol || '₹'
       };
     });
   }, [partnershipLeads, submissions, partnerEmail]);
@@ -75,7 +75,7 @@ export default function CombinedPartnerCampaigns() {
   const totalBudget = useMemo(() => activeCampaigns.reduce((acc, c) => acc + c.budget, 0), [activeCampaigns]);
   const totalSpent = useMemo(() => activeCampaigns.reduce((acc, c) => acc + c.spent, 0), [activeCampaigns]);
   const totalConversions = useMemo(() => activeCampaigns.reduce((acc, c) => acc + c.completedCompletions, 0), [activeCampaigns]);
-  const commonSymbol = activeCampaigns.length > 0 ? (activeCampaigns[0].currencySymbol || '$') : '$';
+  const commonSymbol = activeCampaigns.length > 0 ? (activeCampaigns[0].currencySymbol || '₹') : '₹';
 
   return (
     <div className="partner-content-card">
@@ -246,8 +246,8 @@ export default function CombinedPartnerCampaigns() {
                           </div>
                         </td>
                         <td>
-                          <strong style={{ display: 'block', fontSize: '0.85rem' }}>{camp.currencySymbol || '$'}{camp.spent.toFixed(2)} spent</strong>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>of {camp.currencySymbol || '$'}{camp.budget.toFixed(2)}</span>
+                          <strong style={{ display: 'block', fontSize: '0.85rem' }}>{camp.currencySymbol || '₹'}{camp.spent.toFixed(2)} spent</strong>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>of {camp.currencySymbol || '₹'}{camp.budget.toFixed(2)}</span>
                         </td>
                         <td>
                           <button 
@@ -399,7 +399,7 @@ export default function CombinedPartnerCampaigns() {
               <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border-color)', padding: '16px', borderRadius: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, fontSize: '0.95rem', marginBottom: '8px' }}>
                   <span>Earning Action Payout</span>
-                  <span style={{ color: 'var(--accent-emerald)' }}>+{selectedCampaign.currencySymbol || '$'}{(selectedCampaign.reward || 0).toFixed(2)}</span>
+                  <span style={{ color: 'var(--accent-emerald)' }}>+{selectedCampaign.currencySymbol || '₹'}{(selectedCampaign.reward || 0).toFixed(2)}</span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
                   {selectedCampaign.longDescription || selectedCampaign.description}

@@ -178,7 +178,7 @@ export default function Offerwall() {
                         fontWeight: 600,
                         border: '1px solid rgba(13, 148, 136, 0.15)'
                       }}>
-                        🌍 {app.targetCountry || 'Global'} ({app.currency || 'USD'})
+                        🇮🇳 {app.targetCountry || 'India'} ({app.currency || 'INR'})
                       </span>
                     </div>
                     <div className="likes-counter">

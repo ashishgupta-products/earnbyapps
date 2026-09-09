@@ -122,17 +122,11 @@ export default function UserProfileModal() {
       } catch (err) {
         console.warn('Could not load remote payment methods, using defaults:', err);
         if (active) {
-          const fallback = selectedCountry.name === 'India'
-            ? [
-                { value: 'UPI ID', label: '🇮🇳 UPI ID (GPay / PhonePe / BHIM)', placeholder: 'e.g. name@okhdfcbank' },
-                { value: 'Paytm Wallet Number', label: '📲 Paytm Wallet Mobile Number', placeholder: 'e.g. 9876543210' },
-                { value: 'Bank Transfer (India)', label: '🏦 Bank Account (A/C & IFSC)', placeholder: 'e.g. Account: 12345678, IFSC: SBIN000123' }
-              ]
-            : [
-                { value: 'PayPal Email', label: '💳 PayPal Email', placeholder: 'e.g. billing@paypal.com' },
-                { value: 'Crypto Wallet (USDT/USDC)', label: '🪙 Crypto Wallet Address (USDT/USDC)', placeholder: 'e.g. TRC20 or BEP20 address' },
-                { value: 'Bank Transfer (International)', label: '🏦 Bank Wire (IBAN & SWIFT)', placeholder: 'e.g. IBAN: GB29..., SWIFT: MIDL...' }
-              ];
+          const fallback = [
+            { value: 'UPI ID', label: '🇮🇳 UPI ID (GPay / PhonePe / BHIM / Paytm)', placeholder: 'e.g. name@okhdfcbank / 9876543210@paytm' },
+            { value: 'Paytm Wallet Number', label: '📲 Paytm Wallet Mobile Number', placeholder: 'e.g. 9876543210' },
+            { value: 'Bank Transfer (India)', label: '🏦 Bank Account (A/C & IFSC)', placeholder: 'e.g. Account: 12345678, IFSC: SBIN000123' }
+          ];
           setDynamicMethods(fallback);
           if (fallback.length > 0 && !fallback.some((m: any) => m.value === payoutMethod)) {
             setPayoutMethod(fallback[0].value);
@@ -241,8 +235,8 @@ export default function UserProfileModal() {
     if (!fullName.trim()) newErrors.fullName = 'Full Name is required';
     if (!phone.trim()) {
       newErrors.phone = 'Phone Number is required';
-    } else if (!/^\d{8,12}$/.test(phone.replace(/[\s-+]/g, ''))) {
-      newErrors.phone = 'Please enter a valid phone number';
+    } else if (!/^[6-9]\d{9}$/.test(phone.replace(/[\s-+]/g, '')) && !/^\d{10}$/.test(phone.replace(/[\s-+]/g, ''))) {
+      newErrors.phone = 'Please enter a valid 10-digit Indian mobile number';
     }
 
     // Save profile details
@@ -339,22 +333,22 @@ export default function UserProfileModal() {
 
             <div className="form-group-field">
               <label htmlFor="modal-country">Country</label>
-              <select 
-                id="modal-country"
-                value={selectedCountry.name}
-                onChange={(e) => {
-                  const country = countries.find(c => c.name === e.target.value);
-                  if (country) setSelectedCountry(country);
-                }}
-                className="country-select"
-                style={{ width: '100%' }}
-              >
-                {countries.map((c) => (
-                  <option key={c.name} value={c.name}>
-                    {c.flag} {c.name} ({c.code})
-                  </option>
-                ))}
-              </select>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border-color)',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+                fontSize: '0.95rem'
+              }}>
+                <span>🇮🇳</span>
+                <span>India (+91)</span>
+                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-teal)', background: 'rgba(13, 148, 136, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>India Platform</span>
+              </div>
             </div>
 
             <div className="form-group-field">

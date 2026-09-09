@@ -19,8 +19,8 @@ export default function AdminNewCampaign() {
   const [taskName, setTaskName] = useState('');
   const [category, setCategory] = useState<'Gaming' | 'Surveys' | 'App Testing' | 'App Store Reviews' | 'App Install & Sign Up' | 'LinkedIn Followers' | 'Google Maps Reviews' | 'Telegram Members' | 'WhatsApp Members' | 'Instagram Followers' | 'Facebook Page Followers' | 'Youtube Subscribers' | 'Trustpilot Reviews' | 'Justdial Reviews' | 'Play Store Reviews' | 'Custom Task'>('Gaming');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-  const [targetCountry, setTargetCountry] = useState('Global');
-  const [payout, setPayout] = useState('0.50');
+  const [targetCountry, setTargetCountry] = useState('India');
+  const [payout, setPayout] = useState('50.00');
   const [taskLink, setTaskLink] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [platforms, setPlatforms] = useState<('iOS' | 'Android' | 'Web')[]>([]);
@@ -57,7 +57,7 @@ export default function AdminNewCampaign() {
       return;
     }
 
-    const payoutNum = parseFloat(payout) || 0.50;
+    const payoutNum = parseFloat(payout) || 50.00;
     const details = getCurrencyDetails(targetCountry);
     const rateString = `${details.symbol}${payoutNum.toFixed(2)} / action`;
     const submissionsCount = parseInt(allowedSubmissions) || 1000;
@@ -93,8 +93,8 @@ export default function AdminNewCampaign() {
   const handleReset = () => {
     setTaskName('');
     setCategory('Gaming');
-    setTargetCountry('Global');
-    setPayout('0.50');
+    setTargetCountry('India');
+    setPayout('50.00');
     setTaskLink('');
     setVideoUrl('');
     setPlatforms([]);
@@ -257,126 +257,25 @@ export default function AdminNewCampaign() {
               )}
             </div>
 
-            <div className="form-group" style={{ position: 'relative' }}>
-              <label>Target Country *</label>
-              <button
-                type="button"
-                onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                style={{
-                  width: '100%',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  color: 'var(--text-primary)',
-                  height: '40px',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}
-              >
-                <span>
-                  {targetCountry === 'Global' 
-                    ? '🌍 Global (USD - $)' 
-                    : `${countries.find(c => c.name === targetCountry)?.flag || '🏳️'} ${targetCountry}`
-                  }
-                </span>
-                <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>▼</span>
-              </button>
-
-              {isCountryDropdownOpen && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  zIndex: 200,
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '6px',
-                  boxShadow: 'var(--shadow-premium)',
-                  marginTop: '4px',
-                  padding: '8px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px'
-                }}>
-                  <input
-                    type="text"
-                    value={countrySearchQuery}
-                    onChange={(e) => setCountrySearchQuery(e.target.value)}
-                    placeholder="Search country..."
-                    autoFocus
-                    style={{
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      border: '1px solid var(--border-color)',
-                      padding: '8px 12px',
-                      borderRadius: '4px',
-                      color: 'var(--text-primary)',
-                      fontSize: '0.85rem',
-                      width: '100%',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <div style={{
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column'
-                  }}>
-                    {('global'.includes(countrySearchQuery.toLowerCase())) && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setTargetCountry('Global');
-                          setIsCountryDropdownOpen(false);
-                          setCountrySearchQuery('');
-                        }}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--text-primary)',
-                          padding: '8px 10px',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          borderRadius: '4px'
-                        }}
-                        className="country-item-btn"
-                      >
-                        🌍 Global (USD - $)
-                      </button>
-                    )}
-                    {countries
-                      .filter(c => c.name.toLowerCase().includes(countrySearchQuery.toLowerCase()))
-                      .map(c => (
-                        <button
-                          key={c.name}
-                          type="button"
-                          onClick={() => {
-                            setTargetCountry(c.name);
-                            setIsCountryDropdownOpen(false);
-                            setCountrySearchQuery('');
-                          }}
-                          style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'var(--text-primary)',
-                            padding: '8px 10px',
-                            textAlign: 'left',
-                            cursor: 'pointer',
-                            borderRadius: '4px'
-                          }}
-                          className="country-item-btn"
-                        >
-                          {c.flag} {c.name}
-                        </button>
-                      ))
-                    }
-                  </div>
-                </div>
-              )}
+            <div className="form-group">
+              <label>Target Market & Currency</label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid var(--border-color)',
+                padding: '10px 14px',
+                borderRadius: '6px',
+                color: 'var(--text-primary)',
+                fontWeight: 600,
+                fontSize: '0.9rem'
+              }}>
+                <span>🇮🇳</span>
+                <span>India (INR - ₹)</span>
+                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-teal)', background: 'rgba(13, 148, 136, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>Pan-India Users</span>
+              </div>
+              <span className="input-helper">Campaign will run exclusively for verified users across India.</span>
             </div>
           </div>
 
