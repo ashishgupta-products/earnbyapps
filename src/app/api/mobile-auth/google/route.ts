@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { sql } from '@/lib/db';
 import { signToken } from '@/lib/jwt';
 import crypto from 'crypto';
@@ -27,9 +27,8 @@ export async function POST(request: Request) {
     }
 
     // 1. Verify ID token with Google's public tokeninfo endpoint
-    const googleVerifyRes = await fetch(
-      https://oauth2.googleapis.com/tokeninfo?id_token=
-    );
+    const verifyUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken);
+    const googleVerifyRes = await fetch(verifyUrl);
 
     if (!googleVerifyRes.ok) {
       const errData = await googleVerifyRes.json().catch(() => ({}));
@@ -56,14 +55,14 @@ export async function POST(request: Request) {
 
     // 3. Database operations
     try {
-      await sqlALTER TABLE users ADD COLUMN IF NOT EXISTS origin_app_id VARCHAR(100) DEFAULT 'main';
-      await sqlALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255);
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS origin_app_id VARCHAR(100) DEFAULT 'main'`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255)`;
     } catch (migErr) {
       // Column might already exist
     }
 
     let user: any = null;
-    const existingUsers = await sqlSELECT * FROM users WHERE email = ;
+    const existingUsers = await sql`SELECT * FROM users WHERE email = ${email}`;
 
     if (existingUsers.length > 0) {
       user = existingUsers[0];
@@ -77,7 +76,7 @@ export async function POST(request: Request) {
       // Update google_sub if not yet saved
       try {
         if (!user.google_sub && googleSub) {
-          await sqlUPDATE users SET google_sub =  WHERE id = ;
+          await sql`UPDATE users SET google_sub = ${googleSub} WHERE id = ${user.id}`;
         }
       } catch (e) {}
     } else {
@@ -90,12 +89,12 @@ export async function POST(request: Request) {
       ];
       const role = adminEmails.includes(email) ? 'admin' : 'user';
 
-      await sql
+      await sql`
         INSERT INTO users (id, email, full_name, role, balance, origin_app_id, google_sub)
-        VALUES (, , , , 0.00, 'mobile', )
-      ;
+        VALUES (${newId}, ${email}, ${name}, ${role}, 0.00, 'mobile', ${googleSub})
+      `;
 
-      const created = await sqlSELECT * FROM users WHERE email = ;
+      const created = await sql`SELECT * FROM users WHERE email = ${email}`;
       user = created[0] || {
         id: newId,
         email,
