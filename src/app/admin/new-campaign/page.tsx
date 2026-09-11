@@ -2,16 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
-import { countries, getCountryCurrency } from '../../../data/countries';
 import { getCategoryIcon } from '../../../data/apps';
-
-const COUNTRY_CURRENCIES: Record<string, { currency: string; symbol: string }> = {
-  'Global': { currency: 'USD', symbol: '$' },
-  'India': { currency: 'INR', symbol: '₹' },
-  'United States': { currency: 'USD', symbol: '$' },
-  'United Kingdom': { currency: 'GBP', symbol: '£' },
-  'Europe': { currency: 'EUR', symbol: '€' }
-};
 
 export default function AdminNewCampaign() {
   const { submitOffer } = useApp();
@@ -19,7 +10,6 @@ export default function AdminNewCampaign() {
   const [taskName, setTaskName] = useState('');
   const [category, setCategory] = useState<'Gaming' | 'Surveys' | 'App Testing' | 'App Store Reviews' | 'App Install & Sign Up' | 'LinkedIn Followers' | 'Google Maps Reviews' | 'Telegram Members' | 'WhatsApp Members' | 'Instagram Followers' | 'Facebook Page Followers' | 'Youtube Subscribers' | 'Trustpilot Reviews' | 'Justdial Reviews' | 'Play Store Reviews' | 'Custom Task'>('Gaming');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-  const [targetCountry, setTargetCountry] = useState('India');
   const [payout, setPayout] = useState('50.00');
   const [taskLink, setTaskLink] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
@@ -33,14 +23,7 @@ export default function AdminNewCampaign() {
   const [tagsInput, setTagsInput] = useState('New, Promoted');
   const [referralCode, setReferralCode] = useState('');
 
-  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  const [countrySearchQuery, setCountrySearchQuery] = useState('');
-
   const [success, setSuccess] = useState(false);
-
-  const getCurrencyDetails = (countryName: string) => {
-    return getCountryCurrency(countryName);
-  };
 
   const handleTogglePlatform = (plat: 'iOS' | 'Android' | 'Web') => {
     if (platforms.includes(plat)) {
@@ -58,8 +41,7 @@ export default function AdminNewCampaign() {
     }
 
     const payoutNum = parseFloat(payout) || 50.00;
-    const details = getCurrencyDetails(targetCountry);
-    const rateString = `${details.symbol}${payoutNum.toFixed(2)} / action`;
+    const rateString = `₹${payoutNum.toFixed(2)} / action`;
     const submissionsCount = parseInt(allowedSubmissions) || 1000;
     const parsedTags = tagsInput
       .split(',')
@@ -77,9 +59,9 @@ export default function AdminNewCampaign() {
       tags: parsedTags.length > 0 ? parsedTags : ['Admin direct', 'Promoted'],
       actionText: `Launch ${taskName}`,
       externalUrl: taskLink,
-      targetCountry: targetCountry,
-      currency: details.currency,
-      currencySymbol: details.symbol,
+      targetCountry: 'India',
+      currency: 'INR',
+      currencySymbol: '₹',
       targetCompletions: submissionsCount,
       videoUrl: videoUrl || undefined,
       reward: payoutNum,
@@ -93,7 +75,6 @@ export default function AdminNewCampaign() {
   const handleReset = () => {
     setTaskName('');
     setCategory('Gaming');
-    setTargetCountry('India');
     setPayout('50.00');
     setTaskLink('');
     setVideoUrl('');
@@ -106,8 +87,6 @@ export default function AdminNewCampaign() {
     setReferralCode('');
     setSuccess(false);
   };
-
-  const details = getCurrencyDetails(targetCountry);
 
   return (
     <div className="admin-content-card">
@@ -258,30 +237,7 @@ export default function AdminNewCampaign() {
             </div>
 
             <div className="form-group">
-              <label>Target Market & Currency</label>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid var(--border-color)',
-                padding: '10px 14px',
-                borderRadius: '6px',
-                color: 'var(--text-primary)',
-                fontWeight: 600,
-                fontSize: '0.9rem'
-              }}>
-                <span>🇮🇳</span>
-                <span>India (INR - ₹)</span>
-                <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-teal)', background: 'rgba(13, 148, 136, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>Pan-India Users</span>
-              </div>
-              <span className="input-helper">Campaign will run exclusively for verified users across India.</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid-responsive">
-            <div className="form-group">
-              <label htmlFor="payout">Payout per Conversion ({details.currency} {details.symbol}) *</label>
+              <label htmlFor="payout">Payout per Conversion (₹) *</label>
               <input 
                 id="payout"
                 type="number" 
@@ -289,12 +245,15 @@ export default function AdminNewCampaign() {
                 min="0.01"
                 value={payout} 
                 onChange={(e) => setPayout(e.target.value)}
+                placeholder="e.g. 50.00"
                 required
               />
             </div>
+          </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid-responsive">
             <div className="form-group">
-              <label htmlFor="allowed-submissions">Total Number of Allowed Submission *</label>
+              <label htmlFor="allowed-submissions">Total Number of Allowed Submissions *</label>
               <input 
                 id="allowed-submissions"
                 type="number" 
@@ -304,9 +263,7 @@ export default function AdminNewCampaign() {
                 required
               />
             </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid-responsive">
             <div className="form-group">
               <label htmlFor="task-link">Task Link *</label>
               <input 
@@ -318,7 +275,9 @@ export default function AdminNewCampaign() {
                 required
               />
             </div>
+          </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid-responsive">
             <div className="form-group">
               <label htmlFor="video-link">Video Tutorial Link (Optional)</label>
               <input 
@@ -329,17 +288,17 @@ export default function AdminNewCampaign() {
                 placeholder="e.g. YouTube Shorts or tutorial URL"
               />
             </div>
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="logo-url">Campaign Logo URL (Optional)</label>
-            <input 
-              id="logo-url"
-              type="url" 
-              value={logoUrl} 
-              onChange={(e) => setLogoUrl(e.target.value)} 
-              placeholder="e.g. https://example.com/logo.png"
-            />
+            <div className="form-group">
+              <label htmlFor="logo-url">Campaign Logo URL (Optional)</label>
+              <input 
+                id="logo-url"
+                type="url" 
+                value={logoUrl} 
+                onChange={(e) => setLogoUrl(e.target.value)} 
+                placeholder="e.g. https://example.com/logo.png"
+              />
+            </div>
           </div>
 
           <div className="form-group">

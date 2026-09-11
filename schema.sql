@@ -69,6 +69,20 @@ CREATE TABLE IF NOT EXISTS submissions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 5. Create Payout / Withdrawal Requests Table (Min ₹20 threshold)
+CREATE TABLE IF NOT EXISTS payout_requests (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),
+    user_email VARCHAR(255) NOT NULL,
+    user_name VARCHAR(255) NOT NULL,
+    amount NUMERIC(10, 2) NOT NULL,
+    payout_rail VARCHAR(50) NOT NULL, -- 'upi', 'bank', 'paytm'
+    payout_details TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'Pending', -- 'Pending', 'Processed', 'Rejected'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP
+);
+
 -- Seed Initial Admin User
 INSERT INTO users (email, full_name, role, balance, country)
 VALUES ('admin@earnbyapps.com', 'System Admin', 'admin', 500.00, 'India')

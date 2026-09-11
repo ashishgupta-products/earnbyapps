@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { data: session } = useSession();
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [pendingPayoutsCount, setPendingPayoutsCount] = useState<number>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem('admin-sidebar-collapsed');
@@ -18,6 +19,23 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       setIsCollapsed(saved === 'true');
     }
   }, []);
+
+  useEffect(() => {
+    async function loadPendingPayouts() {
+      try {
+        const res = await fetch('/api/payouts');
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.pendingCount === 'number') {
+            setPendingPayoutsCount(data.pendingCount);
+          }
+        }
+      } catch (e) {
+        // silent
+      }
+    }
+    loadPendingPayouts();
+  }, [pathname]);
 
   const handleToggleCollapse = () => {
     const newVal = !isCollapsed;
@@ -77,11 +95,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { id: 'New Leads for Partnership', label: 'New Leads for Partnership', href: '/admin/partnership-leads', icon: '📝' },
     { id: 'All Submissions', label: 'All Submissions', href: '/admin/submissions', icon: '✔️' },
     { id: 'Manage Users', label: 'Manage Users', href: '/admin/users', icon: '👤' },
+    { id: 'Wallet & Payouts', label: 'Wallet & Payouts', href: '/admin/wallet', icon: '💰', badge: pendingPayoutsCount > 0 ? pendingPayoutsCount : undefined },
     { id: 'Partner Support', label: 'Partner Support', href: '/admin/support', icon: '💬' },
     { id: 'Manage Banners', label: 'Manage Banners', href: '/admin/banners', icon: '🖼️' },
     { id: 'Manage Blog', label: 'Manage Blog', href: '/admin/blog', icon: '📰' },
-    { id: 'Manage Referrals', label: 'Manage Referrals', href: '/admin/referrals', icon: '🔗' },
-    { id: 'Wallet & Payouts', label: 'Wallet & Payouts', href: '/admin/wallet', icon: '💰' }
+    { id: 'Manage Referrals', label: 'Manage Referrals', href: '/admin/referrals', icon: '🔗' }
   ];
 
   const activeItem = menuItems.find(item => {
@@ -125,7 +143,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 title={isCollapsed ? item.label : undefined}
               >
                 <span className="menu-item-icon">{item.icon}</span>
-                {!isCollapsed && <span className="menu-item-lbl">{item.label}</span>}
+                {!isCollapsed && (
+                  <span className="menu-item-lbl" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '6px' }}>
+                    <span>{item.label}</span>
+                    {item.badge !== undefined && (
+                      <span style={{
+                        background: '#f59e0b',
+                        color: 'black',
+                        fontSize: '0.65rem',
+                        fontWeight: 800,
+                        padding: '1px 6px',
+                        borderRadius: '8px',
+                        marginLeft: 'auto'
+                      }}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
+                )}
               </Link>
             );
           })}

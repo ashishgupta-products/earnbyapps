@@ -170,20 +170,12 @@ export default function TaskDetails({ params }: PageProps) {
         finalFileUrl = data.url;
       } catch (error: any) {
         console.error('Upload error:', error);
-        setToastMessage(`Upload Error: ${error.message}. Using placeholder fallback.`);
-        // Fallback to placeholder if upload fails
-        finalFileUrl = proofMediaType === 'image' 
-          ? 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80'
-          : 'https://www.w3schools.com/html/mov_bbb.mp4';
+        setToastMessage(`Upload Error: ${error.message}`);
       }
-    } else {
-      // Premium placeholders for testing
-      finalFileUrl = proofMediaType === 'image' 
-        ? 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80'
-        : 'https://www.w3schools.com/html/mov_bbb.mp4';
     }
 
-    submitTaskCompletion(app.id, proofText || `Uploaded ${proofMediaType} proof`, proofMediaType, finalFileUrl);
+    const effectiveProofType = selectedFile ? proofMediaType : 'text';
+    submitTaskCompletion(app.id, proofText || `Uploaded ${proofMediaType} proof`, effectiveProofType, finalFileUrl || undefined);
     setShowProofInput(false);
     setProofText('');
     setSelectedFile(null);

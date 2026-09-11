@@ -17,6 +17,8 @@ interface RegisteredUser {
   lastLogin: string;
   role: string;
   balance: number;
+  pendingPayout?: number;
+  totalCashedOut?: number;
 }
 
 export default function UsersPage() {
@@ -250,10 +252,41 @@ export default function UsersPage() {
                 </div>
 
                 {/* Right part: Balance, Role, Block & Delete buttons */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: '0 0 auto', justifyContent: 'flex-end' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--accent-emerald)' }}>₹{user.balance.toFixed(2)}</span>
-                    <span className="app-cat-badge" style={{ fontSize: '0.72rem', padding: '3px 8px' }}>{user.role}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: '0 0 auto', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Wallet:</span>
+                      <strong style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)' }}>₹{user.balance.toFixed(2)}</strong>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {user.pendingPayout !== undefined && user.pendingPayout > 0 && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          background: 'rgba(245,158,11,0.1)',
+                          color: '#f59e0b',
+                          border: '1px solid rgba(245,158,11,0.25)',
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          fontWeight: 600
+                        }}>
+                          ₹{user.pendingPayout.toFixed(2)} Pending
+                        </span>
+                      )}
+                      {user.totalCashedOut !== undefined && user.totalCashedOut > 0 && (
+                        <span style={{
+                          fontSize: '0.68rem',
+                          background: 'rgba(255,255,255,0.04)',
+                          color: 'var(--text-secondary)',
+                          border: '1px solid var(--border-color)',
+                          padding: '1px 5px',
+                          borderRadius: '3px'
+                        }}>
+                          ₹{user.totalCashedOut.toFixed(2)} Paid
+                        </span>
+                      )}
+                      <span className="app-cat-badge" style={{ fontSize: '0.68rem', padding: '1px 6px' }}>{user.role}</span>
+                    </div>
                   </div>
                   
                   {/* Action buttons (Only for non-admin accounts) */}

@@ -300,42 +300,95 @@ export default function PartnerVerifications() {
             </div>
 
             {/* Media Proof Preview Panel */}
-            {selectedSub.proofUrl && (
-              <div className="inspector-field">
-                <span className="meta-lbl" style={{ marginBottom: '8px' }}>Visual Media Proof</span>
-                <div style={{
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}>
-                  {selectedSub.proofType === 'video' ? (
-                    <video 
-                      src={selectedSub.proofUrl} 
-                      controls 
-                      style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }}
-                    />
-                  ) : (
-                    <img 
-                      src={selectedSub.proofUrl} 
-                      alt="Proof Screenshot" 
-                      style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px', objectFit: 'contain' }}
-                    />
-                  )}
-                  <button 
-                    onClick={() => setLightboxMedia({ type: selectedSub.proofType === 'video' ? 'video' : 'image', url: selectedSub.proofUrl || '' })}
-                    className="glow-btn-cyan"
-                    style={{ padding: '6px 12px', fontSize: '0.72rem' }}
-                  >
-                    🔍 Zoom & Inspect Proof
-                  </button>
+            {(() => {
+              const media = selectedSub.proofUrl 
+                ? { url: selectedSub.proofUrl, type: selectedSub.proofType || 'image' }
+                : (typeof selectedSub.proof === 'string' && (selectedSub.proof.startsWith('http://') || selectedSub.proof.startsWith('https://') || selectedSub.proof.startsWith('data:image/') || selectedSub.proof.startsWith('/uploads/')))
+                  ? { url: selectedSub.proof, type: 'image' }
+                  : null;
+
+              if (media) {
+                return (
+                  <div className="inspector-field">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span className="meta-lbl" style={{ margin: 0 }}>Visual Media / Screenshot Proof</span>
+                      <span style={{ fontSize: '0.72rem', color: '#06b6d4', background: 'rgba(6,182,212,0.1)', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                        📸 Attachment Verified
+                      </span>
+                    </div>
+                    <div style={{
+                      background: '#090d16',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      padding: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '10px'
+                    }}>
+                      {media.type === 'video' ? (
+                        <video 
+                          src={media.url} 
+                          controls 
+                          style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '6px', background: '#000' }}
+                        />
+                      ) : (
+                        <img 
+                          src={media.url} 
+                          alt="Proof Screenshot" 
+                          style={{ maxWidth: '100%', maxHeight: '260px', borderRadius: '6px', objectFit: 'contain', cursor: 'zoom-in', background: '#040711' }}
+                          onClick={() => setLightboxMedia({ type: 'image', url: media.url })}
+                        />
+                      )}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          onClick={() => setLightboxMedia({ type: media.type as any, url: media.url })}
+                          className="glow-btn-cyan"
+                          style={{ padding: '6px 12px', fontSize: '0.74rem' }}
+                        >
+                          🔍 Zoom Fullscreen
+                        </button>
+                        <a
+                          href={media.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-primary)',
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            fontSize: '0.74rem',
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          ↗️ Open Image
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="inspector-field">
+                  <span className="meta-lbl" style={{ marginBottom: '8px' }}>Visual Media Proof</span>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.01)',
+                    border: '1px dashed var(--border-color)',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    textAlign: 'center',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.82rem'
+                  }}>
+                    📝 No screenshot attached &mdash; Text proof only
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Description Text Proof */}
             <div className="inspector-field">

@@ -24,6 +24,22 @@ function LoginForm() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const errorParam = searchParams.get('error');
+
+  useEffect(() => {
+    if (errorParam) {
+      if (errorParam === 'OAuthSignin' || errorParam === 'OAuthCallback') {
+        setErrorMsg("Google Sign-In is not configured yet (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET are not set in .env.local). Please use Email & Password below, or configure Google credentials.");
+      } else if (errorParam === 'CredentialsSignin') {
+        setErrorMsg("Invalid email or password. Please try again.");
+      } else if (errorParam === 'OAuthAccountNotLinked') {
+        setErrorMsg("This email is already associated with another login method.");
+      } else {
+        setErrorMsg(`Sign-in error: ${errorParam}`);
+      }
+    }
+  }, [errorParam]);
+
   // If already logged in, redirect away
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
@@ -208,6 +224,26 @@ function LoginForm() {
             <button type="submit" className="login-submit-btn" disabled={isLoading}>
               {isLoading ? "Signing In..." : "Sign In"}
             </button>
+
+            <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px dashed var(--border-color)', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              <div style={{ fontWeight: 600, marginBottom: '6px', color: 'var(--text-primary)' }}>Quick Demo Logins:</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button 
+                  type="button" 
+                  onClick={() => { setEmail('aashish.gupta.mails@gmail.com'); setPassword('password123'); setErrorMsg(null); }}
+                  style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', color: 'var(--accent-cyan)', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.72rem' }}
+                >
+                  Admin Demo
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setEmail('tester@example.com'); setPassword('password123'); setErrorMsg(null); }}
+                  style={{ background: 'var(--bg-dark)', border: '1px solid var(--border-color)', color: 'var(--accent-cyan)', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.72rem' }}
+                >
+                  User Demo
+                </button>
+              </div>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleSignUp} className="login-form">

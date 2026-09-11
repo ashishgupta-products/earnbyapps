@@ -63,6 +63,7 @@ const inMemoryUsers: any[] = [
 ];
 
 const inMemorySubmissions: any[] = [];
+const inMemoryPayoutRequests: any[] = [];
 
 const fallbackCampaigns: any[] = [
   {
@@ -177,15 +178,48 @@ function executeFallbackSql(strings: any, ...values: any[]): Promise<any[]> {
   }
 
   if (rawSql.includes('FROM users')) {
+    // Check search term if present
+    const searchVal = values.find(v => typeof v === 'string' && v.startsWith('%') && v.endsWith('%'));
+    let filteredUsers = inMemoryUsers;
+    if (searchVal && searchVal !== '%%') {
+      const term = searchVal.replace(/%/g, '').toLowerCase();
+      filteredUsers = inMemoryUsers.filter(u => 
+        (u.full_name && u.full_name.toLowerCase().includes(term)) ||
+        (u.email && u.email.toLowerCase().includes(term)) ||
+        (u.phone && u.phone.toLowerCase().includes(term)) ||
+        (u.payment_details && u.payment_details.toLowerCase().includes(term)) ||
+        String(u.id).includes(term)
+      );
+    }
+
+    // COUNT query check specifically for users count
+    if (rawSql.includes('SELECT COUNT(')) {
+      return Promise.resolve([{ count: String(filteredUsers.length) }]);
+    }
+
     if (rawSql.includes('device_id =') && rawSql.includes('id !=')) {
       return Promise.resolve([]);
     }
+
     const emailVal = values.find(v => typeof v === 'string' && v.includes('@'));
     if (emailVal) {
       const u = inMemoryUsers.find(x => x.email.toLowerCase() === emailVal.toLowerCase());
       return Promise.resolve(u ? [u] : []);
     }
-    return Promise.resolve(inMemoryUsers);
+
+    const idVal = values.find(v => typeof v === 'string' || typeof v === 'number');
+    if (rawSql.includes('WHERE id =') || rawSql.includes('WHERE u.id =')) {
+      const u = inMemoryUsers.find(x => String(x.id) === String(idVal));
+      return Promise.resolve(u ? [u] : []);
+    }
+
+    if (rawSql.includes('LIMIT') && rawSql.includes('OFFSET')) {
+      const limitVal = typeof values[values.length - 2] === 'number' ? values[values.length - 2] : 5;
+      const offsetVal = typeof values[values.length - 1] === 'number' ? values[values.length - 1] : 0;
+      return Promise.resolve(filteredUsers.slice(offsetVal, offsetVal + limitVal));
+    }
+
+    return Promise.resolve(filteredUsers);
   }
 
   if (rawSql.includes('INSERT INTO users')) {
@@ -213,6 +247,24 @@ function executeFallbackSql(strings: any, ...values: any[]): Promise<any[]> {
   }
 
   if (rawSql.includes('UPDATE users')) {
+    if (rawSql.includes('is_blocked =')) {
+      const isBlocked = values[0];
+      const userId = values[1];
+      const u = inMemoryUsers.find(x => String(x.id) === String(userId));
+      if (u) u.is_blocked = !!isBlocked;
+    } else if (rawSql.includes('balance = balance +')) {
+      const amt = values[0];
+      const userId = values[1];
+      const u = inMemoryUsers.find(x => String(x.id) === String(userId));
+      if (u) u.balance = (parseFloat(u.balance || '0') + parseFloat(amt)).toFixed(2);
+    }
+    return Promise.resolve([]);
+  }
+
+  if (rawSql.includes('DELETE FROM users')) {
+    const idVal = values[0];
+    const idx = inMemoryUsers.findIndex(x => String(x.id) === String(idVal));
+    if (idx !== -1) inMemoryUsers.splice(idx, 1);
     return Promise.resolve([]);
   }
 
@@ -225,6 +277,44 @@ function executeFallbackSql(strings: any, ...values: any[]): Promise<any[]> {
 
   if (rawSql.includes('INSERT INTO submissions')) {
     inMemorySubmissions.push({ id: values[0], created_at: new Date().toISOString() });
+    return Promise.resolve([]);
+  }
+
+  if (rawSql.includes('FROM payout_requests')) {
+    const emailVal = values.find(v => typeof v === 'string' && v.includes('@'));
+    if (emailVal) {
+      return Promise.resolve(inMemoryPayoutRequests.filter(p => p.user_email.toLowerCase() === emailVal.toLowerCase()));
+    }
+    return Promise.resolve(inMemoryPayoutRequests);
+  }
+
+  if (rawSql.includes('INSERT INTO payout_requests')) {
+    const newReq = {
+      id: values[0],
+      user_id: values[1],
+      user_email: values[2],
+      user_name: values[3],
+      amount: parseFloat(values[4]),
+      payout_rail: values[5],
+      payout_details: values[6],
+      status: values[7] || 'Pending',
+      created_at: new Date().toISOString(),
+      processed_at: null
+    };
+    inMemoryPayoutRequests.unshift(newReq);
+    return Promise.resolve([newReq]);
+  }
+
+  if (rawSql.includes('UPDATE payout_requests')) {
+    const statusVal = values[0];
+    const idVal = values[1];
+    const req = inMemoryPayoutRequests.find(r => r.id === idVal);
+    if (req) {
+      req.status = statusVal;
+      if (statusVal === 'Processed') {
+        req.processed_at = new Date().toISOString();
+      }
+    }
     return Promise.resolve([]);
   }
 

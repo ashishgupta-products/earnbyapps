@@ -141,10 +141,73 @@ const INITIAL_LEADS: PartnershipLead[] = [
 ];
 
 const INITIAL_SUBMISSIONS: Submission[] = [
-  { id: 'sub-1', userName: 'Rahul Sharma', userEmail: 'rahul@example.com', appName: 'Groww: Stocks & Mutual Funds', appId: 'groww', taskId: 'gw-1', taskTitle: 'Complete KYC Registration', reward: 150.00, proof: 'KYC verified screenshot #4321', time: '10 mins ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-2', userName: 'Raj Patel', userEmail: 'raj@gmail.com', appName: 'PhonePe UPI Payments', appId: 'phonepe', taskId: 'pp-1', taskTitle: 'Setup First UPI Payment', reward: 50.00, proof: 'UPI linked screenshot uploaded', time: '1 hour ago', status: 'Pending', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-3', userName: 'Sonia Sharma', userEmail: 'sonia@gmail.com', appName: 'Swagbucks India Surveys', appId: 'swagbucks-in', taskId: 'sb-1', taskTitle: 'Complete Consumer Profile', reward: 100.00, proof: 'Verified profile completion dashboard', time: '4 hours ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' },
-  { id: 'sub-4', userName: 'Amit Verma', userEmail: 'amit@gmail.com', appName: 'WinZO Games', appId: 'winzo', taskId: 'wz-1', taskTitle: 'Play 3 Casual Matches', reward: 35.00, proof: 'WinZO profile ID: wz_98248924823', time: '1 day ago', status: 'Paid', verifierEmail: 'admin', verificationType: 'admin' }
+  { 
+    id: 'sub-1', 
+    userName: 'Rahul Sharma', 
+    userEmail: 'rahul@example.com', 
+    appName: 'Groww: Stocks & Mutual Funds', 
+    appId: 'groww', 
+    taskId: 'gw-1', 
+    taskTitle: 'Complete KYC Registration', 
+    reward: 150.00, 
+    proof: 'KYC verified successfully in Groww app. Profile completed with Aadhaar and PAN verification screenshot attached.', 
+    proofType: 'image',
+    proofUrl: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=800&q=80',
+    time: '10 mins ago', 
+    status: 'Pending', 
+    verifierEmail: 'admin', 
+    verificationType: 'admin' 
+  },
+  { 
+    id: 'sub-2', 
+    userName: 'Raj Patel', 
+    userEmail: 'raj@gmail.com', 
+    appName: 'PhonePe UPI Payments', 
+    appId: 'phonepe', 
+    taskId: 'pp-1', 
+    taskTitle: 'Setup First UPI Payment', 
+    reward: 50.00, 
+    proof: 'First transaction of ₹10 completed. Transaction ID: T240911144028491823901. Payment success receipt screenshot uploaded.', 
+    proofType: 'image',
+    proofUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=800&q=80',
+    time: '1 hour ago', 
+    status: 'Pending', 
+    verifierEmail: 'admin', 
+    verificationType: 'admin' 
+  },
+  { 
+    id: 'sub-3', 
+    userName: 'Sonia Sharma', 
+    userEmail: 'sonia@gmail.com', 
+    appName: 'Swagbucks India Surveys', 
+    appId: 'swagbucks-in', 
+    taskId: 'sb-1', 
+    taskTitle: 'Complete Consumer Profile', 
+    reward: 100.00, 
+    proof: 'Verified 100% profile survey completion dashboard. Earned 100 SB points initial milestone.', 
+    proofType: 'image',
+    proofUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80',
+    time: '4 hours ago', 
+    status: 'Paid', 
+    verifierEmail: 'admin', 
+    verificationType: 'admin' 
+  },
+  { 
+    id: 'sub-4', 
+    userName: 'Amit Verma', 
+    userEmail: 'amit@gmail.com', 
+    appName: 'WinZO Games', 
+    appId: 'winzo', 
+    taskId: 'wz-1', 
+    taskTitle: 'Play 3 Casual Matches', 
+    reward: 35.00, 
+    proof: 'Played 3 matches in Fruit Samurai. WinZO profile ID: wz_98248924823. Text confirmation only.', 
+    proofType: 'text',
+    time: '1 day ago', 
+    status: 'Paid', 
+    verifierEmail: 'admin', 
+    verificationType: 'admin' 
+  }
 ];
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {

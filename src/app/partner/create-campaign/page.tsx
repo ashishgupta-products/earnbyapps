@@ -3,15 +3,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../../context/AppContext';
 import { getCategoryIcon } from '../../../data/apps';
-import { countries, getCountryCurrency } from '../../../data/countries';
-
-const COUNTRY_CURRENCIES: Record<string, { currency: string; symbol: string }> = {
-  'Global': { currency: 'USD', symbol: '$' },
-  'India': { currency: 'INR', symbol: '₹' },
-  'United States': { currency: 'USD', symbol: '$' },
-  'United Kingdom': { currency: 'GBP', symbol: '£' },
-  'Europe': { currency: 'EUR', symbol: '€' }
-};
 
 export default function CreatePartnerCampaign() {
   const { submitPartnershipLead } = useApp();
@@ -20,7 +11,6 @@ export default function CreatePartnerCampaign() {
   // Form states
   const [taskName, setTaskName] = useState('');
   const [category, setCategory] = useState<'Gaming' | 'Surveys' | 'App Testing' | 'Passive' | 'App Install & Sign Up' | 'LinkedIn Followers' | 'Google Maps Reviews' | 'Telegram Members' | 'WhatsApp Members' | 'Instagram Followers' | 'Facebook Page Followers' | 'Youtube Subscribers' | 'Trustpilot Reviews' | 'Justdial Reviews' | 'Play Store Reviews' | 'App Store Reviews' | 'Custom Task'>('Gaming');
-  const [targetCountry, setTargetCountry] = useState('India');
   const [taskLink, setTaskLink] = useState('');
   const [platforms, setPlatforms] = useState<('iOS' | 'Android' | 'Web')[]>([]);
   const [payout, setPayout] = useState<number>(50.00);
@@ -62,13 +52,7 @@ export default function CreatePartnerCampaign() {
     );
   };
 
-  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
-  const [countrySearchQuery, setCountrySearchQuery] = useState('');
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-
-  const getCurrencyDetails = (countryName: string) => {
-    return getCountryCurrency(countryName);
-  };
 
   const togglePlatform = (plat: 'iOS' | 'Android' | 'Web') => {
     if (platforms.includes(plat)) {
@@ -85,8 +69,7 @@ export default function CreatePartnerCampaign() {
       return;
     }
 
-    const details = getCurrencyDetails(targetCountry);
-    const displayEarningRate = `${details.symbol}${payout.toFixed(2)} / action`;
+    const displayEarningRate = `₹${payout.toFixed(2)} / action`;
 
     // Map simplified fields to the partnership lead model with sensible defaults
     submitPartnershipLead({
@@ -104,9 +87,9 @@ export default function CreatePartnerCampaign() {
       targetCompletions: targetCompletions,
       costPerCompletion: payout,
       totalBudget: parseFloat((targetCompletions * payout).toFixed(2)),
-      targetCountry: targetCountry,
-      currency: details.currency,
-      currencySymbol: details.symbol,
+      targetCountry: 'India',
+      currency: 'INR',
+      currencySymbol: '₹',
       referralCode: referralCode || undefined
     });
 
@@ -116,7 +99,6 @@ export default function CreatePartnerCampaign() {
   const handleReset = () => {
     setTaskName('');
     setCategory('Gaming');
-    setTargetCountry('India');
     setTaskLink('');
     setPlatforms([]);
     setPayout(50.00);
@@ -126,8 +108,7 @@ export default function CreatePartnerCampaign() {
     setSuccess(false);
   };
 
-  const details = getCurrencyDetails(targetCountry);
-  const symbol = details.symbol;
+  const symbol = '₹';
 
   return (
     <div className="partner-form-viewport">
@@ -282,27 +263,6 @@ export default function CreatePartnerCampaign() {
                     ))}
                   </div>
                 )}
-              </div>
-
-              <div className="form-group">
-                <label>Target Market & Currency</label>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid var(--border-color)',
-                  padding: '10px 14px',
-                  borderRadius: '6px',
-                  color: 'var(--text-primary)',
-                  fontWeight: 600,
-                  fontSize: '0.9rem'
-                }}>
-                  <span>🇮🇳</span>
-                  <span>India (INR - ₹)</span>
-                  <span style={{ marginLeft: 'auto', fontSize: '0.75rem', color: 'var(--accent-teal)', background: 'rgba(13, 148, 136, 0.1)', padding: '2px 8px', borderRadius: '4px' }}>Pan-India Users</span>
-                </div>
-                <span className="input-helper">Campaigns run exclusively for verified users across India.</span>
               </div>
 
               <div className="form-group">
@@ -520,7 +480,7 @@ export default function CreatePartnerCampaign() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
                     <span style={{ color: '#9ca3af' }}>Target Audience:</span>
-                    <strong style={{ color: '#fff' }}>{targetCountry} Users</strong>
+                    <strong style={{ color: '#fff' }}>🇮🇳 India Users</strong>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>

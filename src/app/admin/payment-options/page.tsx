@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function PaymentOptionsPage() {
-  const [minWithdrawal, setMinWithdrawal] = useState(100);
+  const [minWithdrawal, setMinWithdrawal] = useState(20);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
@@ -160,8 +160,8 @@ export default function PaymentOptionsPage() {
               <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-indigo)' }}>₹</span>
               <input 
                 type="number"
-                min="10"
-                step="10"
+                min="20"
+                step="5"
                 value={minWithdrawal}
                 onChange={(e) => setMinWithdrawal(Number(e.target.value))}
                 style={{
@@ -176,7 +176,7 @@ export default function PaymentOptionsPage() {
               />
             </div>
             <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Recommended minimum: ₹50 - ₹100 to reduce micro-transaction overhead.
+              Minimum required earner withdrawal threshold: ₹20.00.
             </span>
           </div>
 

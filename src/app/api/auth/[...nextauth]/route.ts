@@ -6,10 +6,14 @@ import crypto from "crypto";
 
 export const authOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -18,9 +22,7 @@ export const authOptions = {
         token: { label: "Token", type: "text" }
       },
       async authorize(credentials) {
-        if (!isDbConfigured) {
-          throw new Error("DATABASE_URL is not configured.");
-        }
+
 
         if (credentials?.token) {
           const { verifyToken } = require("../../../../lib/jwt");

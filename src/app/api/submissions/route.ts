@@ -98,6 +98,7 @@ export async function GET(req: Request) {
           // fallback
         }
       }
+      const rawProofUrl = r.proof_url || (typeof r.proof === 'string' && (r.proof.startsWith('http://') || r.proof.startsWith('https://') || r.proof.startsWith('data:image/') || r.proof.startsWith('/uploads/')) ? r.proof : undefined);
       return {
         id: r.id,
         userName: r.user_name,
@@ -106,12 +107,12 @@ export async function GET(req: Request) {
         appId: r.app_id,
         reward: Number(r.reward),
         proof: r.proof,
-        proofType: r.proof_type as 'image' | 'video' | 'text',
-        proofUrl: r.proof_url || undefined,
+        proofType: (r.proof_type || (rawProofUrl ? 'image' : 'text')) as 'image' | 'video' | 'text',
+        proofUrl: rawProofUrl,
         status: r.status as 'Pending' | 'Paid' | 'Rejected',
         time: timeStr,
-        verifierEmail: r.verifier_email,
-        verificationType: r.verification_type as 'admin' | 'creator',
+        verifierEmail: r.verifier_email || 'admin',
+        verificationType: (r.verification_type || 'admin') as 'admin' | 'creator',
         referralSlotId: r.referral_slot_id || undefined,
         originAppId: r.origin_app_id || 'main'
       };
@@ -145,8 +146,25 @@ export async function POST(req: Request) {
       originAppId
     } = body;
 
-    const finalProofType = proofType && proofType !== 'text' ? proofType : (proofUrl ? 'image' : 'text');
-    const finalOriginAppId = originAppId || 'main';
+    const rawProof = proof || body.notes || body.description || 'Task completed';
+    const finalProofUrl = 
+      proofUrl || 
+      body.proof_url || 
+      body.screenshot || 
+      body.screenshotUrl || 
+      body.screenshot_url || 
+      body.image || 
+      body.imageUrl || 
+      body.mediaUrl || 
+      (typeof rawProof === 'string' && (rawProof.startsWith('http://') || rawProof.startsWith('https://') || rawProof.startsWith('data:image/') || rawProof.startsWith('/uploads/')) ? rawProof : null);
+
+    const isVideo = finalProofUrl && (finalProofUrl.endsWith('.mp4') || finalProofUrl.endsWith('.webm') || finalProofUrl.includes('video'));
+    const isImage = Boolean(finalProofUrl && !isVideo);
+    const finalProofType = proofType || body.proof_type || (isVideo ? 'video' : isImage ? 'image' : 'text');
+    const finalOriginAppId = originAppId || body.origin_app_id || 'main';
+    const finalVerifierEmail = verifierEmail || body.verifier_email || 'admin';
+    const finalVerificationType = verificationType || body.verification_type || 'admin';
+    const finalSubmissionId = id || `sub-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
     await sql`
       INSERT INTO submissions (
@@ -154,13 +172,13 @@ export async function POST(req: Request) {
         proof, proof_type, proof_url, status, verifier_email,
         verification_type, referral_slot_id, origin_app_id
       ) VALUES (
-        ${id}, ${userName}, ${userEmail}, ${appName}, ${appId}, ${reward},
-        ${proof}, ${finalProofType}, ${proofUrl || null}, ${status || 'Pending'}, ${verifierEmail},
-        ${verificationType}, ${referralSlotId || null}, ${finalOriginAppId}
+        ${finalSubmissionId}, ${userName || 'Anonymous'}, ${userEmail}, ${appName || 'Task App'}, ${appId}, ${reward || 0},
+        ${rawProof}, ${finalProofType}, ${finalProofUrl || null}, ${status || 'Pending'}, ${finalVerifierEmail},
+        ${finalVerificationType}, ${referralSlotId || null}, ${finalOriginAppId}
       )
     `;
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, id: finalSubmissionId });
   } catch (error: any) {
     console.error('Error creating submission:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -184,19 +202,20 @@ export async function PUT(req: Request) {
       const oldStatus = sub.status;
       const rewardVal = parseFloat(sub.reward);
 
-      if (status === 'Paid' && oldStatus !== 'Paid') {
+      const isApprovedStatus = (s: string) => s === 'Paid' || s === 'Approved';
+      if (isApprovedStatus(status) && !isApprovedStatus(oldStatus)) {
         // Add to user balance
         await sql`
           UPDATE users
           SET balance = balance + ${rewardVal}
-          WHERE email = ${sub.user_email}
+          WHERE LOWER(email) = ${sub.user_email.toLowerCase()}
         `;
-      } else if (status !== 'Paid' && oldStatus === 'Paid') {
+      } else if (!isApprovedStatus(status) && isApprovedStatus(oldStatus)) {
         // Subtract from user balance
         await sql`
           UPDATE users
           SET balance = balance - ${rewardVal}
-          WHERE email = ${sub.user_email}
+          WHERE LOWER(email) = ${sub.user_email.toLowerCase()}
         `;
       }
     }

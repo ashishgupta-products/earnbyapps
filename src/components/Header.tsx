@@ -8,7 +8,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function Header() {
   const pathname = usePathname();
-  const { userRole, userProfile, login, logout, theme, toggleTheme } = useApp();
+  const { userRole, userProfile, walletBalance, login, logout, theme, toggleTheme } = useApp();
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const { data: session } = useSession();
 
@@ -39,6 +39,32 @@ export default function Header() {
           >
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
+
+          {/* Earner Live Wallet Balance Badge */}
+          {((session && session.user) || userProfile) && (
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-wallet-modal'))}
+              className="wallet-header-btn"
+              title="View Wallet Balance & Request Withdrawal"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                background: 'rgba(16, 185, 129, 0.12)',
+                border: '1px solid rgba(16, 185, 129, 0.35)',
+                borderRadius: '20px',
+                color: 'var(--accent-emerald)',
+                fontWeight: 700,
+                fontSize: '0.86rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <span>👛</span>
+              <span>₹{((userProfile as any)?.balance ?? (session?.user as any)?.balance ?? walletBalance ?? 0).toFixed(2)}</span>
+            </button>
+          )}
 
           {/* User role menu (Auth dropdown) */}
           <div className="auth-menu-container">
@@ -97,6 +123,29 @@ export default function Header() {
                         🚪 Sign Out
                       </button>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setShowAuthDropdown(false);
+                        window.dispatchEvent(new CustomEvent('open-wallet-modal'));
+                      }}
+                      className="dropdown-item link-item"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        width: '100%',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        font: 'inherit',
+                        color: 'var(--accent-emerald)',
+                        fontWeight: 600
+                      }}
+                    >
+                      👛 Wallet & Withdrawals (Min ₹20)
+                    </button>
 
                     <button
                       onClick={() => {
