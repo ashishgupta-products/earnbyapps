@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '../../../lib/db';
+import { getAuthenticatedUser } from '../../../lib/authHelper';
+import { invalidateCache } from '../../../lib/cache';
 
 const MINIMUM_WITHDRAWAL_AMOUNT = 20.00;
 
@@ -34,11 +36,17 @@ async function ensurePayoutTable() {
 
 export async function GET(request: Request) {
   try {
-    await ensurePayoutTable();
+    const authUser = await getAuthenticatedUser(request);
     const { searchParams } = new URL(request.url);
     const userEmail = searchParams.get('email');
 
     if (userEmail) {
+      const targetEmail = userEmail.toLowerCase();
+      // User can only view their own payout history unless they are an admin
+      if (!authUser || (authUser.role !== 'admin' && authUser.email !== targetEmail)) {
+        return NextResponse.json({ error: 'Unauthorized to view this payout history.' }, { status: 403 });
+      }
+
       // Return history for a specific user
       const requests = await sql`
         SELECT * FROM payout_requests
@@ -63,7 +71,11 @@ export async function GET(request: Request) {
       });
     }
 
-    // Admin view: return all requests and aggregated metrics
+    // Admin view: require admin privileges to view platform payout queue
+    if (!authUser || authUser.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin access required to view all payouts.' }, { status: 403 });
+    }
+
     const allRequests = await sql`
       SELECT * FROM payout_requests
       ORDER BY created_at DESC
@@ -132,13 +144,26 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    await ensurePayoutTable();
-    const body = await request.json();
-    const { email, amount, payoutRail, payoutDetails } = body;
-
-    if (!email) {
-      return NextResponse.json({ error: 'User email is required.' }, { status: 400 });
+    const authUser = await getAuthenticatedUser(request);
+    if (!authUser) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Please sign in with your mobile app or account to withdraw.' },
+        { status: 401 }
+      );
     }
+
+    if (authUser.isBlocked) {
+      return NextResponse.json(
+        { error: 'Your account has been blocked. Please contact support.' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { amount, payoutRail, payoutDetails } = body;
+
+    // Use authenticated user's email; prevent requesting payouts for other users
+    const email = (authUser.role === 'admin' && body.email) ? String(body.email).toLowerCase() : authUser.email;
 
     const withdrawAmt = parseFloat(amount);
     if (isNaN(withdrawAmt) || withdrawAmt <= 0) {
@@ -190,6 +215,8 @@ export async function POST(request: Request) {
       WHERE LOWER(email) = ${email.toLowerCase()}
     `;
 
+    invalidateCache(`user_profile_${email.toLowerCase()}`);
+
     // 2. Insert into payout_requests table
     await sql`
       INSERT INTO payout_requests (
@@ -222,7 +249,11 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    await ensurePayoutTable();
+    const authUser = await getAuthenticatedUser(request);
+    if (!authUser || authUser.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin access required to process payouts.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { id, status, transactionRef, adminNotes } = body;
 
@@ -264,6 +295,7 @@ export async function PUT(request: Request) {
           SET balance = balance + ${reqAmount}
           WHERE LOWER(email) = ${req.user_email.toLowerCase()}
         `;
+        invalidateCache(`user_profile_${req.user_email.toLowerCase()}`);
       }
       await sql`
         UPDATE payout_requests

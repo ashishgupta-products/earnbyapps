@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql, isDbConfigured } from '../../../lib/db';
+import { getAuthenticatedUser } from '../../../lib/authHelper';
+import { invalidateCache } from '../../../lib/cache';
 
 async function ensureSubmissionsTable() {
   if (!isDbConfigured) return;
@@ -42,11 +44,24 @@ export async function GET(req: Request) {
   }
 
   try {
-    await ensureSubmissionsTable();
+    const authUser = await getAuthenticatedUser(req);
     const { searchParams } = new URL(req.url);
     const appId = searchParams.get('appId');
     const userEmail = searchParams.get('userEmail');
     const originAppId = searchParams.get('originAppId');
+
+    // If querying submissions for a specific user, verify identity
+    if (userEmail) {
+      const normalizedEmail = userEmail.toLowerCase();
+      if (!authUser || (authUser.role !== 'admin' && authUser.role !== 'partner' && authUser.email !== normalizedEmail)) {
+        return NextResponse.json({ error: 'Unauthorized to view these submissions.' }, { status: 403 });
+      }
+    } else {
+      // Querying all submissions requires admin or partner privileges
+      if (!authUser || (authUser.role !== 'admin' && authUser.role !== 'partner')) {
+        return NextResponse.json({ error: 'Forbidden: Admin or Partner privileges required.' }, { status: 403 });
+      }
+    }
 
     let rows;
     if (appId && userEmail) {
@@ -127,7 +142,15 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await ensureSubmissionsTable();
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized: Please sign in with your mobile app or account to submit tasks.' }, { status: 401 });
+    }
+
+    if (authUser.isBlocked) {
+      return NextResponse.json({ error: 'Your account has been blocked. Please contact support.' }, { status: 403 });
+    }
+
     const body = await req.json();
     const {
       id,
@@ -166,13 +189,16 @@ export async function POST(req: Request) {
     const finalVerificationType = verificationType || body.verification_type || 'admin';
     const finalSubmissionId = id || `sub-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 
+    const finalUserEmail = (authUser.role === 'admin' && userEmail) ? userEmail.toLowerCase() : authUser.email;
+    const finalUserName = userName || authUser.email.split('@')[0];
+
     await sql`
       INSERT INTO submissions (
         id, user_name, user_email, app_name, app_id, reward,
         proof, proof_type, proof_url, status, verifier_email,
         verification_type, referral_slot_id, origin_app_id
       ) VALUES (
-        ${finalSubmissionId}, ${userName || 'Anonymous'}, ${userEmail}, ${appName || 'Task App'}, ${appId}, ${reward || 0},
+        ${finalSubmissionId}, ${finalUserName}, ${finalUserEmail}, ${appName || 'Task App'}, ${appId}, ${reward || 0},
         ${rawProof}, ${finalProofType}, ${finalProofUrl || null}, ${status || 'Pending'}, ${finalVerifierEmail},
         ${finalVerificationType}, ${referralSlotId || null}, ${finalOriginAppId}
       )
@@ -187,7 +213,11 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    await ensureSubmissionsTable();
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser || (authUser.role !== 'admin' && authUser.role !== 'partner')) {
+      return NextResponse.json({ error: 'Forbidden: Admin or Partner privileges required to review submissions.' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { id, status } = body;
 
@@ -210,6 +240,7 @@ export async function PUT(req: Request) {
           SET balance = balance + ${rewardVal}
           WHERE LOWER(email) = ${sub.user_email.toLowerCase()}
         `;
+        invalidateCache(`user_profile_${sub.user_email.toLowerCase()}`);
       } else if (!isApprovedStatus(status) && isApprovedStatus(oldStatus)) {
         // Subtract from user balance
         await sql`
@@ -217,6 +248,7 @@ export async function PUT(req: Request) {
           SET balance = balance - ${rewardVal}
           WHERE LOWER(email) = ${sub.user_email.toLowerCase()}
         `;
+        invalidateCache(`user_profile_${sub.user_email.toLowerCase()}`);
       }
     }
 

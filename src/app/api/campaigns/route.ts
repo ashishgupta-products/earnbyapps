@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { sql, isDbConfigured } from '../../../lib/db';
 import { EARNING_APPS } from '../../../data/apps';
+import { getAuthenticatedUser } from '../../../lib/authHelper';
+import { getCachedData, invalidateCache } from '../../../lib/cache';
 
 function mapCampaign(c: any) {
   return {
@@ -60,60 +62,75 @@ export async function GET(request: Request) {
       });
     }
 
-    // Ensure columns exist (Self-migrating)
-    try {
-      await sql`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS assigned_email VARCHAR(255)`;
-      await sql`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE`;
-      await sql`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS logo_url TEXT`;
-      await sql`ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS referral_code VARCHAR(255)`;
-    } catch (migErr) {
-      console.warn("Migration warning for assigned_email/is_active/logo_url/referral_code column:", migErr);
-    }
-
     if (!page) {
-      const campaigns = await sql`SELECT * FROM campaigns ORDER BY created_at DESC`;
-      const formattedCampaigns = campaigns.map(c => mapCampaign(c));
-      return NextResponse.json(formattedCampaigns);
+      const cacheKey = `campaigns_all`;
+      const formattedCampaigns = await getCachedData(cacheKey, 120, async () => {
+        const campaigns = await sql`SELECT * FROM campaigns ORDER BY created_at DESC`;
+        return campaigns.map(c => mapCampaign(c));
+      });
+
+      return NextResponse.json(formattedCampaigns, {
+        headers: {
+          'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=300'
+        }
+      });
     }
 
-    // Paginated server-side query
+    // Paginated server-side query with In-Memory RAM Caching
     const pageNum = parseInt(page);
     const offset = (pageNum - 1) * limit;
     const searchPattern = `%${search.toLowerCase()}%`;
+    const cacheKey = `campaigns_p_${country}_${pageNum}_${limit}_${search.toLowerCase()}`;
 
-    let campaigns;
-    let countRes;
+    const { formattedCampaigns, totalCount } = await getCachedData(cacheKey, 60, async () => {
+      let campaigns;
+      let countRes;
 
-    if (country === 'All') {
-      campaigns = await sql`
-        SELECT * FROM campaigns 
-        WHERE (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      countRes = await sql`
-        SELECT COUNT(*) as count FROM campaigns 
-        WHERE (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
-      `;
-    } else {
-      campaigns = await sql`
-        SELECT * FROM campaigns 
-        WHERE target_country = ${country} AND (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
-        ORDER BY created_at DESC
-        LIMIT ${limit} OFFSET ${offset}
-      `;
-      countRes = await sql`
-        SELECT COUNT(*) as count FROM campaigns 
-        WHERE target_country = ${country} AND (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
-      `;
-    }
+      if (country === 'All') {
+        const [campaignsRes, countQueryRes] = await Promise.all([
+          sql`
+            SELECT * FROM campaigns 
+            WHERE (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
+            ORDER BY created_at DESC
+            LIMIT ${limit} OFFSET ${offset}
+          `,
+          sql`
+            SELECT COUNT(*) as count FROM campaigns 
+            WHERE (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
+          `
+        ]);
+        campaigns = campaignsRes;
+        countRes = countQueryRes;
+      } else {
+        const [campaignsRes, countQueryRes] = await Promise.all([
+          sql`
+            SELECT * FROM campaigns 
+            WHERE target_country = ${country} AND (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
+            ORDER BY created_at DESC
+            LIMIT ${limit} OFFSET ${offset}
+          `,
+          sql`
+            SELECT COUNT(*) as count FROM campaigns 
+            WHERE target_country = ${country} AND (LOWER(name) LIKE ${searchPattern} OR LOWER(category) LIKE ${searchPattern})
+          `
+        ]);
+        campaigns = campaignsRes;
+        countRes = countQueryRes;
+      }
 
-    const totalCount = parseInt(countRes[0]?.count || '0');
-    const formattedCampaigns = campaigns.map(c => mapCampaign(c));
+      return {
+        formattedCampaigns: campaigns.map(c => mapCampaign(c)),
+        totalCount: parseInt(countRes[0]?.count || '0')
+      };
+    });
 
     return NextResponse.json({
       campaigns: formattedCampaigns,
       totalCount
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=300'
+      }
     });
   } catch (error: any) {
     console.error('Error fetching campaigns from database:', error);
@@ -123,6 +140,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authUser = await getAuthenticatedUser(request);
+    if (!authUser || (authUser.role !== 'admin' && authUser.role !== 'partner')) {
+      return NextResponse.json({ error: 'Forbidden: Admin or Partner privileges required to manage campaigns.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const {
       id,
@@ -187,6 +209,8 @@ export async function POST(request: Request) {
         referral_code = EXCLUDED.referral_code
     `;
 
+    invalidateCache('campaigns_');
+
     return NextResponse.json({ success: true, id: finalId });
   } catch (error: any) {
     console.error('Error creating/updating campaign in database:', error);
@@ -204,6 +228,7 @@ export async function DELETE(request: Request) {
     }
 
     await sql`DELETE FROM campaigns WHERE id = ${id}`;
+    invalidateCache('campaigns_');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting campaign from database:', error);

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql, isDbConfigured } from '../../../lib/db';
+import { getCachedData } from '../../../lib/cache';
 
 export const DEFAULT_PAYMENT_METHODS = [
   {
@@ -47,27 +48,36 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Query active Indian payment methods
-    const countryMethods = await sql`
-      SELECT id, name, label, placeholder, target_country as "targetCountry", is_active as "isActive", fields, placeholder_type as "placeholderType"
-      FROM payment_methods
-      WHERE is_active = true AND LOWER(target_country) = ${country.toLowerCase()}
-      ORDER BY id ASC
-    `;
+    const cacheKey = `payment_methods_${country.toLowerCase()}`;
+    const methods = await getCachedData(cacheKey, 300, async () => {
+      // Query active Indian payment methods
+      const countryMethods = await sql`
+        SELECT id, name, label, placeholder, target_country as "targetCountry", is_active as "isActive", fields, placeholder_type as "placeholderType"
+        FROM payment_methods
+        WHERE is_active = true AND LOWER(target_country) = ${country.toLowerCase()}
+        ORDER BY id ASC
+      `;
 
-    if (countryMethods.length > 0) {
-      return NextResponse.json(countryMethods);
-    }
+      if (countryMethods.length > 0) {
+        return countryMethods;
+      }
 
-    // Otherwise all active methods or defaults
-    const allMethods = await sql`
-      SELECT id, name, label, placeholder, target_country as "targetCountry", is_active as "isActive", fields, placeholder_type as "placeholderType"
-      FROM payment_methods
-      WHERE is_active = true
-      ORDER BY id ASC
-    `;
+      // Otherwise all active methods or defaults
+      const allMethods = await sql`
+        SELECT id, name, label, placeholder, target_country as "targetCountry", is_active as "isActive", fields, placeholder_type as "placeholderType"
+        FROM payment_methods
+        WHERE is_active = true
+        ORDER BY id ASC
+      `;
 
-    return NextResponse.json(allMethods.length > 0 ? allMethods : DEFAULT_PAYMENT_METHODS);
+      return allMethods.length > 0 ? allMethods : DEFAULT_PAYMENT_METHODS;
+    });
+
+    return NextResponse.json(methods, {
+      headers: {
+        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+      }
+    });
   } catch (error: any) {
     console.warn('Database error in GET /api/payment-methods, using fallback:', error.message);
     return NextResponse.json(getFallbackPaymentMethods(country));

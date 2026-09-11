@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '../../context/AppContext';
 import { useSession, signOut } from 'next-auth/react';
+import AppLogo from '../../components/AppLogo';
+import BrandLogo from '../../components/BrandLogo';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { userRole } = useApp();
@@ -116,12 +118,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       
       {/* Sidebar Navigation */}
       <aside className={`admin-nav-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-header">
-          {!isCollapsed && (
-            <>
-              <span className="sidebar-badge-icon">🛡️</span>
-              <span className="sidebar-badge-text">ADMIN</span>
-            </>
+        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: isCollapsed ? 'center' : 'space-between', padding: isCollapsed ? '16px 8px' : '16px 20px' }}>
+          {!isCollapsed ? (
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AppLogo size={28} />
+              <BrandLogo fontSize="1.05rem" />
+            </Link>
+          ) : (
+            <Link href="/" style={{ textDecoration: 'none', display: 'flex', justifyContent: 'center' }}>
+              <AppLogo size={28} />
+            </Link>
           )}
           <button 
             className="sidebar-toggle-btn"

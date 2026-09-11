@@ -98,3 +98,27 @@ VALUES
 ('swagbucks-in', 'Swagbucks India', 'Surveys', 'Android,iOS,Web', '₹100.00 / survey', 100.00, 'Complete Indian consumer demographic surveys for instant cash.', 'Answer market research questions about products in India and redeem points.', 'Surveys,Easy,Verified', 'https://swagbucks.com', 'India', 'INR', '₹'),
 ('rozdhan', 'Roz Dhan: News & Earn', 'Passive', 'Android', '₹25.00 / install', 25.00, 'Read news articles and check in daily on Roz Dhan.', 'Install the Roz Dhan app, log in, and browse trending articles for 3 days.', 'Passive,Daily Checkin,Simple', 'https://rozdhan.com', 'India', 'INR', '₹')
 ON CONFLICT (id) DO NOTHING;
+
+-- 6. Performance Indexes for Low-Latency Querying
+CREATE INDEX IF NOT EXISTS idx_users_email_lower ON users (LOWER(email));
+CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users (role);
+CREATE INDEX IF NOT EXISTS idx_users_country ON users (country);
+
+CREATE INDEX IF NOT EXISTS idx_submissions_user_email_lower ON submissions (LOWER(user_email));
+CREATE INDEX IF NOT EXISTS idx_submissions_user_email ON submissions (user_email);
+CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions (status);
+CREATE INDEX IF NOT EXISTS idx_submissions_app_id ON submissions (app_id);
+CREATE INDEX IF NOT EXISTS idx_submissions_created_at ON submissions (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_submissions_origin_app_id ON submissions (origin_app_id);
+
+CREATE INDEX IF NOT EXISTS idx_payouts_user_email_lower ON payout_requests (LOWER(user_email));
+CREATE INDEX IF NOT EXISTS idx_payouts_user_id ON payout_requests (user_id);
+CREATE INDEX IF NOT EXISTS idx_payouts_status ON payout_requests (status);
+CREATE INDEX IF NOT EXISTS idx_payouts_created_at ON payout_requests (created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_campaigns_country ON campaigns (target_country);
+CREATE INDEX IF NOT EXISTS idx_campaigns_is_active ON campaigns (is_active);
+CREATE INDEX IF NOT EXISTS idx_campaigns_created_at ON campaigns (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_campaigns_category ON campaigns (category);
+

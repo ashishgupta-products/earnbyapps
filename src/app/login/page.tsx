@@ -3,6 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import AppLogo from '../../components/AppLogo';
+import BrandLogo from '../../components/BrandLogo';
 
 function LoginForm() {
   const { status, data: session } = useSession();
@@ -141,9 +143,11 @@ function LoginForm() {
         {/* Top Glow bar */}
         <div className="login-card-glow-bar"></div>
 
-        <div className="login-header">
-          <span className="logo-emoji">🛡️</span>
-          <h2>EarnByApps Account</h2>
+        <div className="login-header" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <AppLogo size={48} showSparkle />
+          <div style={{ marginTop: '4px' }}>
+            <BrandLogo fontSize="1.5rem" />
+          </div>
           <p>Sign in or create an account to start earning or listing apps.</p>
         </div>
 

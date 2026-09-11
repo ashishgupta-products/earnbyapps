@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     const googlePayload = await googleVerifyRes.json();
 
-    // 2. Validate essential claims
+    // 2. Validate essential claims & audience
     const email = googlePayload.email ? googlePayload.email.toLowerCase() : null;
     const googleSub = googlePayload.sub;
     const name = googlePayload.name || clientUser?.name || 'Google User';
@@ -48,19 +48,39 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json(
-        { error: 'Google account does not have a verified email address.' },
+        { error: 'Google account does not have an email address.' },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // 3. Database operations
-    try {
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS origin_app_id VARCHAR(100) DEFAULT 'main'`;
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255)`;
-    } catch (migErr) {
-      // Column might already exist
+    const isEmailVerified = googlePayload.email_verified === 'true' || googlePayload.email_verified === true;
+    if (!isEmailVerified) {
+      return NextResponse.json(
+        { error: 'Google account email is not verified by Google.' },
+        { status: 403, headers: corsHeaders }
+      );
     }
 
+    // Verify token audience matches your registered app (prevents token re-use attacks)
+    const allowedClientIds = [
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_MOBILE_CLIENT_ID,
+      process.env.GOOGLE_ANDROID_CLIENT_ID,
+      process.env.GOOGLE_IOS_CLIENT_ID,
+    ].filter(Boolean) as string[];
+
+    if (allowedClientIds.length > 0) {
+      const tokenAud = googlePayload.aud;
+      if (!tokenAud || !allowedClientIds.includes(tokenAud)) {
+        console.warn(`[AUTH AUDIENCE WARNING] Received aud: "${tokenAud}". Expected one of:`, allowedClientIds);
+        return NextResponse.json(
+          { error: 'Unauthorized: Google ID token was not issued for EarnByApps.' },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+    }
+
+    // 3. Database operations
     let user: any = null;
     const existingUsers = await sql`SELECT * FROM users WHERE email = ${email}`;
 

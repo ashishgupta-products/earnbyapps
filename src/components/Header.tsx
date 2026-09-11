@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp, UserRole } from '../context/AppContext';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import AppLogo from './AppLogo';
+import BrandLogo from './BrandLogo';
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,8 +27,8 @@ export default function Header() {
     <header className="site-header">
       <div className="nav-container">
         <Link href="/" className="logo-wrapper">
-          <span className="logo-icon">₹</span>
-          <span className="logo-text">EarnByApps</span>
+          <AppLogo size={36} showSparkle />
+          <BrandLogo fontSize="1.35rem" />
         </Link>
         
         <div className="header-actions">
@@ -227,20 +229,12 @@ export default function Header() {
         .logo-wrapper {
           display: flex;
           align-items: center;
-          gap: 8px;
-          font-family: var(--font-display);
-          font-size: 1.4rem;
-          font-weight: 800;
-          letter-spacing: -0.02em;
+          gap: 10px;
           text-decoration: none;
-          color: var(--text-primary);
+          transition: opacity 0.2s ease;
         }
-        .logo-icon {
-          font-size: 1.5rem;
-          color: var(--accent-indigo);
-        }
-        .logo-text {
-          color: var(--text-primary);
+        .logo-wrapper:hover {
+          opacity: 0.9;
         }
         .header-actions {
           display: flex;

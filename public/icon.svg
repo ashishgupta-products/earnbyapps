@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Midnight Slate Squircle Badge -->
+  <rect x="6" y="6" width="500" height="500" rx="150" fill="#0F172A" stroke="rgba(255, 255, 255, 0.12)" stroke-width="12"/>
+  
+  <!-- Centered White Indian Rupee Symbol (₹) -->
+  <g transform="translate(100, 100) scale(13)">
+    <path d="M13.66 7C13.1 5.82 11.9 5 10.5 5L6 5V3H18V5H14.74C15.22 5.58 15.58 6.26 15.79 7H18V9H16C15.73 11.8 13.37 14 10.5 14H9.61L15.89 21H13.11L6.89 14V12H10.5C12.43 12 14 10.43 14 8.5C14 7.96 13.88 7.46 13.66 7Z" fill="#FFFFFF"/>
+  </g>
+  
+  <!-- Top-Right Circular Sparkle Badge -->
+  <circle cx="430" cy="82" r="74" fill="#FEF3C7" stroke="#FFFFFF" stroke-width="14"/>
+  
+  <!-- Amber 4-Point Star Icon -->
+  <g transform="translate(376, 28) scale(4.5)">
+    <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="#D97706"/>
+  </g>
+</svg>

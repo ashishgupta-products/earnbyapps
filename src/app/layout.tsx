@@ -9,6 +9,12 @@ import SessionProviderWrapper from "../components/SessionProviderWrapper";
 export const metadata: Metadata = {
   title: "EarnByApps | India's #1 App Testing & Real Cash Earning Platform",
   description: "Earn real cash via UPI, Paytm, and Direct Bank Transfer by testing, reviewing, and installing top apps in India. Fast payouts and verified campaigns.",
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
