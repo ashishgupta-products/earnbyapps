@@ -24,7 +24,7 @@ export default function HomeAudienceSwitcher({
           type="button"
           role="tab"
           aria-selected={activeMode === 'earn'}
-          className={`switcher-tab ${activeMode === 'earn' ? 'is-active' : ''}`}
+          className={`switcher-tab tab-earn ${activeMode === 'earn' ? 'is-active' : ''}`}
           onClick={() => onModeChange('earn')}
           id="switcher-to-earn"
         >
@@ -37,7 +37,7 @@ export default function HomeAudienceSwitcher({
           type="button"
           role="tab"
           aria-selected={activeMode === 'grow'}
-          className={`switcher-tab ${activeMode === 'grow' ? 'is-active' : ''}`}
+          className={`switcher-tab tab-grow ${activeMode === 'grow' ? 'is-active' : ''}`}
           onClick={() => onModeChange('grow')}
           id="switcher-to-grow"
         >
@@ -88,13 +88,13 @@ export default function HomeAudienceSwitcher({
         }
         .switcher-glider.glider-earn {
           transform: translateX(0%);
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.32);
+          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
+          box-shadow: 0 4px 14px rgba(58, 89, 152, 0.35);
         }
         .switcher-glider.glider-grow {
           transform: translateX(100%);
-          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.32);
+          background: linear-gradient(135deg, #EAA812 0%, #c98a08 100%);
+          box-shadow: 0 4px 14px rgba(234, 168, 18, 0.38);
         }
 
         /* Interactive Tabs */
@@ -126,6 +126,12 @@ export default function HomeAudienceSwitcher({
         }
         .switcher-tab.is-active {
           color: #ffffff;
+        }
+        .switcher-tab.tab-earn.is-active {
+          text-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
+        }
+        .switcher-tab.tab-grow.is-active {
+          text-shadow: 0 1px 2px rgba(120, 53, 15, 0.35);
         }
 
         .tab-icon {

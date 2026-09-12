@@ -121,23 +121,11 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
             <div className="promo-actions-row">
               <Link 
                 href="/partner/create-campaign" 
-                className="glow-btn-purple"
+                className="glow-btn-grow"
                 onClick={handleLaunchCampaignClick}
               >
                 Launch Your Campaign →
               </Link>
-              <a 
-                href={process.env.NEXT_PUBLIC_ANDROID_APK_URL || "/EarnByApps%20v-1.0.0.apk"}
-                download="EarnByApps-v1.0.0.apk"
-                className="secondary-outline-btn apk-download-btn"
-                title="Download Android App APK"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#10b981', flexShrink: 0 }}>
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1523-.5676.416.416 0 00-.5676.1523l-2.0223 3.503C15.5902 8.411 13.8559 8.1 12 8.1s-3.5902.311-5.1366.8499L4.8411 5.4469a.4161.4161 0 00-.5677-.1523.4157.4157 0 00-.1522.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
-                </svg>
-                <span>Download App to Earn</span>
-                <span className="apk-badge-tag">APK</span>
-              </a>
             </div>
 
             <div className="promo-footer-note">
@@ -403,7 +391,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .dynamic-part {
           flex: 1;
           text-align: left;
-          color: var(--accent-indigo);
+          color: #d97706;
           font-weight: 800;
           position: relative;
           white-space: nowrap;
@@ -412,14 +400,14 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           display: inline-block;
           width: 3px;
           height: 1.25rem;
-          background-color: var(--accent-indigo);
+          background-color: #EAA812;
           margin-left: 2px;
           vertical-align: text-bottom;
           animation: blink 0.75s step-end infinite;
         }
         @keyframes blink {
           from, to { background-color: transparent }
-          50% { background-color: var(--accent-indigo); }
+          50% { background-color: #EAA812; }
         }
 
         /* Promo card refinements */
@@ -440,7 +428,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: transform 0.25s ease, border-color 0.25s ease;
         }
         .promo-container-box:hover {
-          border-color: var(--accent-indigo);
+          border-color: #EAA812;
           transform: translateY(-2px);
         }
         .promo-badge-tag {
@@ -448,12 +436,12 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          background: rgba(79, 70, 229, 0.12);
-          color: #818cf8;
+          background: rgba(234, 168, 18, 0.12);
+          color: #b45309;
           padding: 4px 12px;
           border-radius: 20px;
           margin-bottom: 12px;
-          border: 1px solid rgba(79, 70, 229, 0.25);
+          border: 1px solid rgba(234, 168, 18, 0.3);
         }
         .promo-actions-row {
           display: flex;
@@ -462,6 +450,35 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           align-items: center;
           flex-wrap: wrap;
           margin-bottom: 16px;
+        }
+        .glow-btn-grow,
+        .landing-page-main .glow-btn-purple {
+          background: linear-gradient(135deg, #EAA812 0%, #c98a08 100%);
+          border: 1px solid rgba(234, 168, 18, 0.4);
+          color: #ffffff !important;
+          padding: 12px 24px;
+          border-radius: 8px;
+          font-family: var(--font-primary);
+          font-weight: 700;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          text-decoration: none;
+          box-shadow: 0 4px 16px rgba(234, 168, 18, 0.35);
+        }
+        .glow-btn-grow:hover,
+        .landing-page-main .glow-btn-purple:hover {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          box-shadow: 0 6px 22px rgba(234, 168, 18, 0.45);
+          transform: translateY(-2px);
+        }
+        .glow-btn-grow:active,
+        .landing-page-main .glow-btn-purple:active {
+          transform: translateY(0);
         }
         .secondary-outline-btn {
           padding: 10px 22px;
@@ -481,27 +498,6 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           background: var(--bg-card-hover);
           border-color: var(--border-hover);
           color: var(--text-primary);
-        }
-        .apk-download-btn {
-          gap: 8px;
-          background: rgba(16, 185, 129, 0.08);
-          border: 1px solid rgba(16, 185, 129, 0.35);
-          color: var(--text-primary);
-        }
-        .apk-download-btn:hover {
-          background: rgba(16, 185, 129, 0.16);
-          border-color: #10b981;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
-        }
-        .apk-badge-tag {
-          font-size: 0.68rem;
-          background: rgba(16, 185, 129, 0.2);
-          color: #059669;
-          font-weight: 700;
-          padding: 2px 6px;
-          border-radius: 4px;
-          letter-spacing: 0.5px;
         }
         .promo-footer-note {
           display: flex;
@@ -531,9 +527,9 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.06em;
-          color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.08);
-          border: 1px solid rgba(79, 70, 229, 0.2);
+          color: #b45309;
+          background: rgba(234, 168, 18, 0.1);
+          border: 1px solid rgba(234, 168, 18, 0.25);
           padding: 4px 14px;
           border-radius: 999px;
           margin-bottom: 12px;
@@ -584,7 +580,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-family: var(--font-display);
           font-size: 2.3rem;
           font-weight: 900;
-          color: #4f46e5;
+          color: #c98a08;
           letter-spacing: -0.03em;
           line-height: 1.1;
           margin-bottom: 6px;
@@ -619,18 +615,18 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         }
         .step-card:hover {
           transform: translateY(-4px);
-          border-color: var(--accent-indigo);
+          border-color: #EAA812;
         }
         .featured-step {
-          background: linear-gradient(180deg, rgba(79, 70, 229, 0.05) 0%, var(--bg-card) 100%);
-          border-color: rgba(79, 70, 229, 0.35);
+          background: linear-gradient(180deg, rgba(234, 168, 18, 0.05) 0%, var(--bg-card) 100%);
+          border-color: rgba(234, 168, 18, 0.4);
         }
         .step-number-bubble {
           font-family: var(--font-display);
           font-size: 0.85rem;
           font-weight: 800;
-          color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.1);
+          color: #b45309;
+          background: rgba(234, 168, 18, 0.12);
           padding: 4px 10px;
           border-radius: 8px;
           margin-bottom: 16px;
@@ -679,7 +675,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: all 0.2s ease;
         }
         .channel-box:hover {
-          border-color: var(--accent-indigo);
+          border-color: #EAA812;
           background: var(--bg-card-hover);
           transform: translateY(-3px);
         }
@@ -689,7 +685,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(79, 70, 229, 0.08);
+          background: rgba(234, 168, 18, 0.08);
           border-radius: 12px;
           border: 1px solid var(--border-color);
           margin-bottom: 16px;
@@ -715,8 +711,8 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .channel-badge {
           font-size: 0.72rem;
           font-weight: 700;
-          color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.1);
+          color: #b45309;
+          background: rgba(234, 168, 18, 0.12);
           padding: 3px 8px;
           border-radius: 6px;
         }
@@ -739,7 +735,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: border-color 0.2s ease, background-color 0.2s ease;
         }
         .faq-item:hover, .faq-item-open {
-          border-color: var(--accent-indigo);
+          border-color: #EAA812;
           background: var(--bg-card-hover);
         }
         .faq-question-row {
@@ -758,7 +754,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .faq-toggle-icon {
           font-size: 1.4rem;
           font-weight: 600;
-          color: var(--accent-indigo);
+          color: #c98a08;
         }
         .faq-answer-block {
           margin-top: 14px;

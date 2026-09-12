@@ -382,20 +382,6 @@ export default function Home() {
               India’s premier daily cash reward platform. Earn real money by completing simple app tasks, 
               surveys, and inviting friends.
             </p>
-            <div className="footer-partner-link-box">
-              <span>Are you a business, brand, or app developer?</span>
-              <button 
-                type="button"
-                onClick={() => {
-                  setActiveMode('grow');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }} 
-                className="footer-business-link"
-                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit' }}
-              >
-                Switch to "To Grow" & Launch Campaigns →
-              </button>
-            </div>
           </div>
 
           <div className="footer-right-links">
@@ -502,7 +488,7 @@ export default function Home() {
           color: var(--text-primary, #0f172a);
         }
         .highlight-gradient {
-          background: linear-gradient(135deg, #059669 0%, #10b981 50%, #d97706 100%);
+          background: linear-gradient(135deg, #3A5998 0%, #2b4374 50%, #EAA812 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -529,19 +515,19 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           gap: 14px;
-          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
           color: #ffffff;
           text-decoration: none;
           padding: 14px 24px;
           border-radius: 14px;
           font-weight: 700;
           transition: all 0.25s ease;
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
-          border: 1px solid rgba(52, 211, 153, 0.4);
+          box-shadow: 0 6px 20px rgba(58, 89, 152, 0.35);
+          border: 1px solid rgba(58, 89, 152, 0.5);
         }
         .main-apk-download-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45);
+          box-shadow: 0 10px 28px rgba(58, 89, 152, 0.5);
           filter: brightness(1.06);
         }
         .apk-btn-icon-wrapper {
@@ -593,7 +579,7 @@ export default function Home() {
           gap: 6px;
         }
         .check-icon {
-          color: #10b981;
+          color: #3A5998;
           font-weight: 900;
         }
 
@@ -663,7 +649,7 @@ export default function Home() {
         .badge-title {
           font-weight: 800;
           font-size: 0.88rem;
-          color: #059669;
+          color: #3A5998;
         }
         .badge-sub {
           font-size: 0.7rem;
@@ -687,7 +673,7 @@ export default function Home() {
           background: #0f172a;
           border: 6px solid #334155;
           border-radius: 42px;
-          box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25), 0 0 40px rgba(16, 185, 129, 0.1);
+          box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25), 0 0 40px rgba(58, 89, 152, 0.15);
           overflow: hidden;
           position: relative;
           display: flex;
@@ -738,8 +724,8 @@ export default function Home() {
           color: #ffffff;
         }
         .mockup-user-chip {
-          background: rgba(16, 185, 129, 0.15);
-          color: #10b981;
+          background: rgba(58, 89, 152, 0.15);
+          color: #3A5998;
           font-size: 0.78rem;
           font-weight: 700;
           padding: 3px 8px;
@@ -841,11 +827,11 @@ export default function Home() {
         .mockup-task-reward span {
           font-size: 0.78rem;
           font-weight: 800;
-          color: #10b981;
+          color: #3A5998;
         }
         .mockup-task-btn {
-          background: rgba(16, 185, 129, 0.15);
-          color: #10b981;
+          background: rgba(58, 89, 152, 0.15);
+          color: #3A5998;
           border: none;
           font-size: 0.62rem;
           font-weight: 800;
@@ -966,8 +952,8 @@ export default function Home() {
           box-shadow: var(--shadow-md);
         }
         .earner-step-card.featured-step {
-          background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, #ffffff 100%);
-          border-color: rgba(16, 185, 129, 0.35);
+          background: linear-gradient(180deg, rgba(58, 89, 152, 0.05) 0%, #ffffff 100%);
+          border-color: rgba(58, 89, 152, 0.35);
         }
         .step-number-tag {
           font-size: 0.72rem;
@@ -988,7 +974,7 @@ export default function Home() {
           margin-bottom: 20px;
         }
         .earner-step-card.featured-step .step-icon-circle {
-          background: rgba(16, 185, 129, 0.15);
+          background: rgba(58, 89, 152, 0.15);
         }
         .step-heading {
           font-size: 1.25rem;
@@ -1084,24 +1070,6 @@ export default function Home() {
           line-height: 1.6;
           margin: 0 0 20px;
         }
-        .footer-partner-link-box {
-          background: var(--bg-dark, #f8fafc);
-          border: 1px solid var(--border-color, #e2e8f0);
-          border-radius: 12px;
-          padding: 12px 16px;
-          font-size: 0.82rem;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .footer-business-link {
-          color: #d97706;
-          font-weight: 700;
-          text-decoration: none;
-        }
-        .footer-business-link:hover {
-          text-decoration: underline;
-        }
         .footer-right-links {
           display: flex;
           gap: 60px;
@@ -1125,7 +1093,7 @@ export default function Home() {
           transition: color 0.2s;
         }
         .footer-col a:hover {
-          color: #059669;
+          color: #3A5998;
         }
         .footer-bottom-bar {
           text-align: center;
@@ -1167,18 +1135,18 @@ export default function Home() {
         }
         .sticky-app-sub {
           font-size: 0.72rem;
-          color: #059669;
+          color: #3A5998;
           font-weight: 700;
         }
         .sticky-download-btn {
-          background: #10b981;
+          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
           color: #ffffff;
           font-weight: 800;
           padding: 10px 18px;
           border-radius: 10px;
           text-decoration: none;
           font-size: 0.88rem;
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+          box-shadow: 0 4px 12px rgba(58, 89, 152, 0.35);
         }
 
         /* RESPONSIVE MEDIA QUERIES */
