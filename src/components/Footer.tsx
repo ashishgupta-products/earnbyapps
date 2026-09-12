@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
 
-  // Hide the footer in admin and partner dashboards
-  if (pathname.startsWith('/admin') || pathname.startsWith('/partner')) {
+  // Hide the footer in admin and partner dashboards, and on homepage (which has its dedicated rich footer)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/partner') || pathname === '/') {
     return null;
   }
 
@@ -24,9 +24,9 @@ export default function Footer() {
       <style>{`
         .site-footer {
           border-top: 1px solid var(--border-color);
-          background: rgba(7, 5, 13, 0.9);
+          background: var(--bg-card);
           padding: 40px 24px;
-          margin-top: 80px;
+          margin-top: 60px;
         }
         .footer-content {
           max-width: 1200px;

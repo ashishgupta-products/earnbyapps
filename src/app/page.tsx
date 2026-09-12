@@ -1,1061 +1,1246 @@
 "use client";
- 
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { getCategoryIcon } from '../data/apps';
+import AppLogo from '@/components/AppLogo';
+import BrandLogo from '@/components/BrandLogo';
+import HomeAudienceSwitcher from '@/components/HomeAudienceSwitcher';
+import BusinessView from '@/components/BusinessView';
+
+
+
+
+
+
+
+// FAQs for Earners
+const FAQS = [
+  {
+    q: 'Is EarnByApps 100% free to use?',
+    a: 'Yes, absolutely 100% free! You never have to pay or invest anything. You only earn real cash by trying out new apps, rating them, and completing quick sponsored tasks.'
+  },
+  {
+    q: 'How do I withdraw my earnings?',
+    a: 'You can withdraw directly to your Bank Account via UPI (Google Pay, PhonePe, Paytm, BHIM) or Paytm Wallet. The minimum withdrawal threshold is just ₹20, and payouts are processed within 2 to 15 minutes.'
+  },
+  {
+    q: 'Is it safe to install the APK on Android?',
+    a: 'Yes! The APK is built directly from verified source code and scanned clean. It requires standard app permissions and does not access your sensitive personal data or financial passwords.'
+  },
+  {
+    q: 'Can I earn on both the Android App and the website?',
+    a: 'Yes! Your account and wallet balance are synchronized in real-time. You can complete tasks on our website offerwall or through the Android APK using the same Google login.'
+  },
+  {
+    q: 'How does the Refer & Earn program work?',
+    a: 'When your friend downloads EarnByApps with your referral link or code, you automatically earn an instant bonus plus up to 50% commission on every task they complete for life!'
+  }
+];
 
 export default function Home() {
   const { data: session } = useSession();
-
-  const handleLaunchCampaignClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!session) {
-      e.preventDefault();
-      window.location.href = `/login?callbackUrl=/partner/create-campaign`;
-    }
-  };
-
-  // Dynamic Typewriter effect
-  const words = ['Actions', 'Results', 'Leads', 'Conversions', 'Growth'];
-  const [wordIndex, setWordIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [typingSpeed, setTypingSpeed] = useState(150);
-
-  useEffect(() => {
-    const activeWord = words[wordIndex];
-    let timer: NodeJS.Timeout;
-
-    if (isDeleting) {
-      timer = setTimeout(() => {
-        setCurrentText(activeWord.substring(0, currentText.length - 1));
-        setTypingSpeed(75);
-      }, typingSpeed);
-    } else {
-      timer = setTimeout(() => {
-        setCurrentText(activeWord.substring(0, currentText.length + 1));
-        setTypingSpeed(150);
-      }, typingSpeed);
-    }
-
-    if (!isDeleting && currentText === activeWord) {
-      timer = setTimeout(() => setIsDeleting(true), 1500);
-    } else if (isDeleting && currentText === '') {
-      setIsDeleting(false);
-      setWordIndex((prev) => (prev + 1) % words.length);
-      setTypingSpeed(1200);
-    }
-
-    return () => clearTimeout(timer);
-  }, [currentText, isDeleting, wordIndex]);
-
-  // FAQ Accordion State
+  const [activeMode, setActiveMode] = useState<'earn' | 'grow'>('earn');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [showStickyBar, setShowStickyBar] = useState(false);
 
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
+  // Monitor scroll for mobile sticky download bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 380) {
+        setShowStickyBar(true);
+      } else {
+        setShowStickyBar(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const faqs = [
-    {
-      q: "How do the 100 free credits work for new campaigns?",
-      a: "When you sign up as a new partner, you receive 100 complimentary credits directly in your balance. You can apply them immediately toward your first campaign to test our real-user acquisition engine without spending a rupee upfront."
-    },
-    {
-      q: "How are task completions verified to prevent fraud and bot traffic?",
-      a: "Every submission requires proof — such as mandatory in-app screenshots, transaction IDs, or video screen captures. Our automated fraud-detection algorithms cross-check device signatures and IP uniqueness, followed by human audit before any payout is released."
-    },
-    {
-      q: "Can I target specific Indian regions and operating systems?",
-      a: "Yes! You can target your campaigns across India and choose specific platforms including Android, iOS, or Web."
-    },
-    {
-      q: "How quickly will my campaign start receiving real completions?",
-      a: "Once approved, campaigns are published to our active user feed and partner mobile app instantly. Most partners start seeing verified submissions within 15 to 30 minutes of launch."
-    },
-    {
-      q: "What payment methods are supported for funding and payouts?",
-      a: "We support instant UPI (Google Pay, PhonePe, Paytm, BHIM), Net Banking, and Paytm Wallet for instant rupee payouts across India."
-    }
-  ];
+
+  const apkDownloadUrl = process.env.NEXT_PUBLIC_ANDROID_APK_URL || '/EarnByApps%20v-1.0.0.apk';
 
   return (
-    <main className="landing-page-main">
-      
-      {/* 1. HERO SECTION */}
-      <section className="landing-hero-section">
-        <div className="landing-content-container">
+    <div className="home-root-wrapper">
+
+
+
+      {/* 2. AUDIENCE SWITCHER: TO EARN vs TO GROW */}
+      <HomeAudienceSwitcher 
+        activeMode={activeMode} 
+        onModeChange={(mode) => setActiveMode(mode)} 
+      />
+
+      {activeMode === 'grow' ? (
+        <BusinessView onSwitchToEarn={() => setActiveMode('earn')} />
+      ) : (
+        <main className="earner-homepage-main">
+          {/* 3. HERO SECTION */}
+          <section className="earner-hero-section">
+            <div className="hero-container">
           
-          {/* Capsule Badge */}
-          <div className="hero-capsule">
-            <span className="live-dot"></span> 🇮🇳 Powering Real User Acquisition Across India
-          </div>
+          {/* Left Hero Content */}
+          <div className="hero-left-content">
+            <div className="hero-trust-tag">
+              <span>🔥 India’s #1 Real Cash Earning App</span>
+            </div>
 
-          {/* Main Header title */}
-          <h1 className="landing-hero-title">
-            Your Growth Partner <span className="arrow">↓</span>
-          </h1>
+            <h1 className="hero-title">
+              Complete Simple Tasks, <br />
+              <span className="highlight-gradient">Get Instant UPI Cash Daily</span>
+            </h1>
 
-          {/* Hero description */}
-          <div className="landing-hero-subtitle">
-            <span className="static-part">Pay only for&nbsp;</span>
-            <span className="dynamic-part">
-              {currentText}
-              <span className="typing-cursor"></span>
-            </span>
-          </div>
-          <p className="landing-hero-tagline">
-            Don't pay for impressions — pay only for verified actions!
-          </p>
-
-          {/* Promo Credit card box */}
-          <div className="promo-container-box">
-            <div className="promo-badge-tag">🔥 Special Launch Offer</div>
-            <h2 className="promo-header">
-              100 Free Credits for 1st Campaign!
-            </h2>
-            <p className="promo-subheader">
-              Easily set up your campaign & start getting guaranteed conversions
+            <p className="hero-subtitle">
+              Install genuine apps, rate & review, spin the daily wheel, and refer buddies. 
+              Transfer your cash rewards straight to <strong>Google Pay, PhonePe, or Paytm</strong> with a 
+              minimum withdrawal of just <strong>₹20</strong>!
             </p>
 
-            <div className="promo-actions-row">
-              <Link 
-                href="/partner/create-campaign" 
-                className="glow-btn-purple"
-                onClick={handleLaunchCampaignClick}
-              >
-                Launch Your Campaign →
-              </Link>
+            {/* Primary Action Buttons */}
+            <div className="hero-actions-row">
               <a 
-                href={process.env.NEXT_PUBLIC_ANDROID_APK_URL || "/EarnByApps%20v-1.0.0.apk"}
+                href={apkDownloadUrl} 
                 download="EarnByApps-v1.0.0.apk"
-                className="secondary-outline-btn apk-download-btn"
-                title="Download Android App APK"
+                className="main-apk-download-btn"
+                id="hero-download-apk-btn"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#10b981', flexShrink: 0 }}>
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1523-.5676.416.416 0 00-.5676.1523l-2.0223 3.503C15.5902 8.411 13.8559 8.1 12 8.1s-3.5902.311-5.1366.8499L4.8411 5.4469a.4161.4161 0 00-.5677-.1523.4157.4157 0 00-.1522.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
-                </svg>
-                <span>Download App to Earn</span>
-                <span className="apk-badge-tag">APK</span>
-              </a>
-            </div>
-
-            <div className="promo-footer-note">
-              <span>✓ No credit card required</span>
-              <span>✓ Real human users</span>
-              <span>✓ Instant setup</span>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* 2. STATS & SOCIAL PROOF BAR */}
-      <section className="landing-stats-section">
-        <div className="stats-bar-grid">
-          <div className="stat-card">
-            <div className="stat-number">500K+</div>
-            <div className="stat-label">Verified Actions Delivered</div>
-            <div className="stat-sub">Across 150+ App Campaigns</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">99.4%</div>
-            <div className="stat-label">Human Verification Rate</div>
-            <div className="stat-sub">Zero Bot or Fake Activity</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">₹45L+</div>
-            <div className="stat-label">Paid Out to Real Earners</div>
-            <div className="stat-sub">Instant UPI, Paytm & NetBanking</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-number">3.2x</div>
-            <div className="stat-label">Higher ROI vs Ad Networks</div>
-            <div className="stat-sub">Strict Cost-Per-Action Pricing</div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. HOW IT WORKS (3 SIMPLE STEPS) */}
-      <section className="landing-section">
-        <div className="section-header-block">
-          <div className="section-pill">Simple 3-Step Process</div>
-          <h2 className="section-main-heading">How EarnByApps Delivers Guaranteed Scale</h2>
-          <p className="section-lead-text">
-            No complicated bidding auctions or wasted impressions. Set your requirements and watch real users complete them.
-          </p>
-        </div>
-
-        <div className="steps-container-grid">
-          <div className="step-card">
-            <div className="step-number-bubble">01</div>
-            <div className="step-icon">🎯</div>
-            <h3 className="step-title">Create Your Campaign</h3>
-            <p className="step-desc">
-              Choose your target goal (App install, store review, signup, or social follower) and set your budget with 100 free starting credits.
-            </p>
-            <div className="step-tag">Takes under 2 minutes</div>
-          </div>
-
-          <div className="step-card featured-step">
-            <div className="step-number-bubble">02</div>
-            <div className="step-icon">🇮🇳</div>
-            <h3 className="step-title">Target Real Indian Users</h3>
-            <p className="step-desc">
-              Your campaign is distributed to verified real users across India filtered by platform (Android, iOS, or Web).
-            </p>
-            <div className="step-tag">Pan-India & OS Filtered</div>
-          </div>
-
-          <div className="step-card">
-            <div className="step-number-bubble">03</div>
-            <div className="step-icon">🛡️</div>
-            <h3 className="step-title">Verify Proofs & Pay</h3>
-            <p className="step-desc">
-              Review screenshot or video proof before payout approval. Funds are deducted strictly for confirmed, authentic completions.
-            </p>
-            <div className="step-tag">100% Risk Free</div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. MULTI-CHANNEL CONVERSION CHANNELS */}
-      <section className="landing-section">
-        <div className="section-header-block">
-          <div className="section-pill">Acquisition Channels</div>
-          <h2 className="section-main-heading">Every Conversion Goal Under One Roof</h2>
-          <p className="section-lead-text">
-            Whatever key performance indicator drives your growth, we have verified users ready to take action.
-          </p>
-        </div>
-
-        <div className="channels-grid">
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('App Install & Sign Up')}
-            </div>
-            <h3 className="channel-name">App Installs & Signups</h3>
-            <p className="channel-desc">
-              High-retention mobile app downloads with onboarding and signup milestones on Google Play & App Store.
-            </p>
-            <div className="channel-badge">Most Popular</div>
-          </div>
-
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('Play Store Reviews')}
-            </div>
-            <h3 className="channel-name">Store Ratings & Reviews</h3>
-            <p className="channel-desc">
-              Organic 5-star ratings and authentic user reviews that enhance your ASO rank and user conversion rate.
-            </p>
-            <div className="channel-badge">ASO Booster</div>
-          </div>
-
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('Google Maps Reviews')}
-            </div>
-            <h3 className="channel-name">Google Maps & Local SEO</h3>
-            <p className="channel-desc">
-              Legitimate local reviews with photo attachments to build reputation and dominate local Google searches.
-            </p>
-            <div className="channel-badge">Local Trust</div>
-          </div>
-
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('Telegram Members')}
-            </div>
-            <h3 className="channel-name">Telegram & WhatsApp</h3>
-            <p className="channel-desc">
-              Instant community expansion with real active members joining your crypto, trading, or brand channels.
-            </p>
-            <div className="channel-badge">Community Growth</div>
-          </div>
-
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('Youtube Subscribers')}
-            </div>
-            <h3 className="channel-name">Social Followers & Fans</h3>
-            <p className="channel-desc">
-              Boost your social presence across YouTube, LinkedIn, Instagram, and Facebook with genuine follower growth.
-            </p>
-            <div className="channel-badge">Brand Authority</div>
-          </div>
-
-          <div className="channel-box">
-            <div className="channel-icon-wrapper">
-              {getCategoryIcon('Surveys')}
-            </div>
-            <h3 className="channel-name">Surveys & User Research</h3>
-            <p className="channel-desc">
-              Obtain targeted demographic data, consumer feedback, and product opinions from real verified participants.
-            </p>
-            <div className="channel-badge">Instant Feedback</div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. COMPARISON TABLE: TRADITIONAL ADS VS EARNBYAPPS */}
-      <section className="landing-section">
-        <div className="section-header-block">
-          <div className="section-pill">Why We Win</div>
-          <h2 className="section-main-heading">EarnByApps vs Traditional Ad Networks</h2>
-          <p className="section-lead-text">
-            See how performance-driven acquisition beats paying for passive impressions and accidental clicks.
-          </p>
-        </div>
-
-        <div className="comparison-table-wrapper">
-          <table className="comparison-table">
-            <thead>
-              <tr>
-                <th>Feature / Factor</th>
-                <th className="highlight-col">₹ EarnByApps (Action-Based)</th>
-                <th>Traditional Ad Networks (CPM/CPC)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="feature-cell">
-                  <strong>Billing Model</strong>
-                  <span>What you actually spend money on</span>
-                </td>
-                <td className="highlight-col success-cell">
-                  <span className="check-icon">✓</span> Only verified completed actions
-                </td>
-                <td className="danger-cell">
-                  <span className="cross-icon">✗</span> Passive impressions & accidental clicks
-                </td>
-              </tr>
-              <tr>
-                <td className="feature-cell">
-                  <strong>Bot & Fraud Protection</strong>
-                  <span>Integrity of your traffic</span>
-                </td>
-                <td className="highlight-col success-cell">
-                  <span className="check-icon">✓</span> Screenshot/video proof required & audited
-                </td>
-                <td className="danger-cell">
-                  <span className="cross-icon">✗</span> Up to 30% spent on web crawler bots
-                </td>
-              </tr>
-              <tr>
-                <td className="feature-cell">
-                  <strong>Conversion Certainty</strong>
-                  <span>Guarantee of result</span>
-                </td>
-                <td className="highlight-col success-cell">
-                  <span className="check-icon">✓</span> 100% Guaranteed target goal delivery
-                </td>
-                <td className="danger-cell">
-                  <span className="cross-icon">✗</span> Zero conversion guarantees
-                </td>
-              </tr>
-              <tr>
-                <td className="feature-cell">
-                  <strong>Initial Trial</strong>
-                  <span>Getting started risk</span>
-                </td>
-                <td className="highlight-col success-cell">
-                  <span className="check-icon">✓</span> 100 Free credits to test first campaign
-                </td>
-                <td className="danger-cell">
-                  <span className="cross-icon">✗</span> High minimum deposit & setup fees
-                </td>
-              </tr>
-              <tr>
-                <td className="feature-cell">
-                  <strong>Real Community Impact</strong>
-                  <span>User engagement depth</span>
-                </td>
-                <td className="highlight-col success-cell">
-                  <span className="check-icon">✓</span> Genuine downloads, reviews & active members
-                </td>
-                <td className="danger-cell">
-                  <span className="cross-icon">✗</span> High immediate bounce rate
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 8. FAQ ACCORDION */}
-      <section className="landing-section">
-        <div className="section-header-block">
-          <div className="section-pill">Got Questions?</div>
-          <h2 className="section-main-heading">Frequently Asked Questions</h2>
-          <p className="section-lead-text">
-            Everything you need to know about launching your first campaign or earning rewards.
-          </p>
-        </div>
-
-        <div className="faq-accordion-container">
-          {faqs.map((faq, index) => (
-            <div 
-              key={index} 
-              className={`faq-item ${openFaq === index ? 'faq-item-open' : ''}`}
-              onClick={() => toggleFaq(index)}
-            >
-              <div className="faq-question-row">
-                <h3 className="faq-question-text">{faq.q}</h3>
-                <span className="faq-toggle-icon">{openFaq === index ? '−' : '+'}</span>
-              </div>
-              {openFaq === index && (
-                <div className="faq-answer-block">
-                  <p>{faq.a}</p>
+                <div className="apk-btn-icon-wrapper">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1523-.5676.416.416 0 00-.5676.1523l-2.0223 3.503C15.5902 8.411 13.8559 8.1 12 8.1s-3.5902.311-5.1366.8499L4.8411 5.4469a.4161.4161 0 00-.5677-.1523.4157.4157 0 00-.1522.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
+                  </svg>
                 </div>
-              )}
+                <div className="apk-btn-text-wrapper">
+                  <span className="apk-btn-sub">DIRECT ANDROID INSTALL</span>
+                  <span className="apk-btn-main">Download App to Earn</span>
+                </div>
+                <span className="apk-file-badge">32 MB • APK</span>
+              </a>
+
             </div>
-          ))}
+
+            {/* Micro Trust Points */}
+            <div className="hero-micro-trust">
+              <div className="micro-trust-item">
+                <span className="check-icon">✓</span>
+                <span><strong>Min. ₹20</strong> Instant UPI Payout</span>
+              </div>
+              <div className="micro-trust-item">
+                <span className="check-icon">✓</span>
+                <span><strong>100% Free</strong> • No Investment</span>
+              </div>
+              <div className="micro-trust-item">
+                <span className="check-icon">✓</span>
+                <span><strong>No Passwords</strong> Required</span>
+              </div>
+            </div>
+
+            {/* Stats Counter Row */}
+            <div className="hero-stats-strip">
+              <div className="hero-stat-box">
+                <span className="stat-number">₹10L+</span>
+                <span className="stat-label">Paid to Earners</span>
+              </div>
+              <div className="hero-stat-box divider-box">
+                <span className="stat-number">50,000+</span>
+                <span className="stat-label">Active Users</span>
+              </div>
+              <div className="hero-stat-box divider-box">
+                <span className="stat-number">4.7 ★</span>
+                <span className="stat-label">App Rating</span>
+              </div>
+              <div className="hero-stat-box divider-box">
+                <span className="stat-number">2 Mins</span>
+                <span className="stat-label">Avg. Payout Time</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Right Hero: Responsive Interactive Phone Mockup */}
+          <div className="hero-right-mockup">
+            <div className="phone-wrapper">
+              
+              {/* Floating Money Badges */}
+              <div className="floating-badge badge-top-right animate-float-slow">
+                <span className="badge-icon">💸</span>
+                <div>
+                  <div className="badge-title">+₹150.00</div>
+                  <div className="badge-sub">UPI Bank Transfer</div>
+                </div>
+              </div>
+
+              <div className="floating-badge badge-bottom-left animate-float-delay">
+                <span className="badge-icon">🎉</span>
+                <div>
+                  <div className="badge-title">Daily Spin Bonus</div>
+                  <div className="badge-sub">+25 Sikka Coins</div>
+                </div>
+              </div>
+
+              {/* Smartphone Outer Shell */}
+              <div className="phone-shell">
+                <div className="phone-notch">
+                  <div className="phone-camera"></div>
+                  <div className="phone-speaker"></div>
+                </div>
+
+                {/* Phone Inside Screen */}
+                <div className="phone-screen">
+                  
+                  {/* App Header in Phone */}
+                  <div className="mockup-header">
+                    <div className="mockup-brand">
+                      <AppLogo size={24} />
+                      <span className="mockup-brand-name">EarnByApps</span>
+                    </div>
+                    <div className="mockup-user-chip">
+                      <span className="mockup-user-avatar">🇮🇳</span>
+                      <span>₹340.50</span>
+                    </div>
+                  </div>
+
+                  {/* Wallet Card inside Mockup */}
+                  <div className="mockup-wallet-card">
+                    <div className="mockup-wallet-row">
+                      <div>
+                        <span className="mockup-wallet-label">Available Balance</span>
+                        <div className="mockup-wallet-bal">₹340.50</div>
+                      </div>
+                      <button className="mockup-withdraw-btn">Withdraw →</button>
+                    </div>
+                    <div className="mockup-min-note">Min. ₹20 • Instant UPI Transfer</div>
+                  </div>
+
+                  {/* Quick Action Chips inside Mockup */}
+                  <div className="mockup-action-chips">
+                    <div className="mockup-chip active">🔥 High Payouts</div>
+                    <div className="mockup-chip">🎡 Daily Spin</div>
+                    <div className="mockup-chip">⭐ Ratings</div>
+                  </div>
+
+                  {/* Sample Task Cards in Mockup */}
+                  <div className="mockup-tasks-list">
+                    <div className="mockup-task-item">
+                      <div className="mockup-task-icon">📈</div>
+                      <div className="mockup-task-info">
+                        <div className="mockup-task-title">Groww Demat Setup</div>
+                        <div className="mockup-task-desc">Install & Complete KYC</div>
+                      </div>
+                      <div className="mockup-task-reward">
+                        <span>+₹150</span>
+                        <button className="mockup-task-btn">Get</button>
+                      </div>
+                    </div>
+
+                    <div className="mockup-task-item">
+                      <div className="mockup-task-icon">🪙</div>
+                      <div className="mockup-task-info">
+                        <div className="mockup-task-title">Angel One App</div>
+                        <div className="mockup-task-desc">Register & Verify</div>
+                      </div>
+                      <div className="mockup-task-reward">
+                        <span>+₹120</span>
+                        <button className="mockup-task-btn">Get</button>
+                      </div>
+                    </div>
+
+                    <div className="mockup-task-item">
+                      <div className="mockup-task-icon">⭐</div>
+                      <div className="mockup-task-info">
+                        <div className="mockup-task-title">Play Store Review</div>
+                        <div className="mockup-task-desc">5 Star Rating Task</div>
+                      </div>
+                      <div className="mockup-task-reward">
+                        <span>+₹35</span>
+                        <button className="mockup-task-btn">Get</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Navigation Mockup */}
+                  <div className="mockup-bottom-nav">
+                    <span className="nav-tab active">🏠 Home</span>
+                    <span className="nav-tab">📋 Tasks</span>
+                    <span className="nav-tab">👛 Wallet</span>
+                    <span className="nav-tab">🤝 Refer</span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
-      {/* 9. FINAL BOTTOM CTA BANNER */}
-      <section className="landing-bottom-cta-section">
-        <div className="final-cta-card">
-          <div className="cta-glow-circle"></div>
-          <div className="final-cta-content">
-            <h2 className="final-cta-title">Ready to Scale Your App with Guaranteed Results?</h2>
-            <p className="final-cta-subtitle">
-              Join hundreds of creators and brands getting verified conversions today. Claim your 100 free credits now.
-            </p>
+      {/* 3. SUPPORTED PAYMENT PARTNERS STRIP */}
+      <section className="payment-partners-section">
+        <div className="partners-container">
+          <span className="partners-title">Instant Cash Withdrawals Supported via:</span>
+          <div className="partners-pills-row">
+            <div className="partner-pill">⚡ UPI (Instant)</div>
+            <div className="partner-pill">📱 Google Pay</div>
+            <div className="partner-pill">🟣 PhonePe</div>
+            <div className="partner-pill">🔵 Paytm Wallet</div>
+            <div className="partner-pill">🇮🇳 BHIM UPI</div>
+            <div className="partner-pill">🏦 Direct Bank Transfer</div>
+          </div>
+        </div>
+      </section>
 
-            <div className="final-cta-buttons">
-              <Link 
-                href="/partner/create-campaign" 
-                className="glow-btn-purple final-large-btn"
-                onClick={handleLaunchCampaignClick}
-              >
-                Launch Your First Campaign →
-              </Link>
-              <a 
-                href={process.env.NEXT_PUBLIC_ANDROID_APK_URL || "/EarnByApps%20v-1.0.0.apk"}
-                download="EarnByApps-v1.0.0.apk"
-                className="secondary-outline-btn final-large-btn apk-download-btn"
-                title="Download Android App APK"
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#10b981', flexShrink: 0 }}>
-                  <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.551 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1523-.5676.416.416 0 00-.5676.1523l-2.0223 3.503C15.5902 8.411 13.8559 8.1 12 8.1s-3.5902.311-5.1366.8499L4.8411 5.4469a.4161.4161 0 00-.5677-.1523.4157.4157 0 00-.1522.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396"/>
-                </svg>
-                <span>Download App to Earn (.APK)</span>
-              </a>
+      {/* 4. HOW IT WORKS: 3 SIMPLE STEPS TO EARN */}
+      <section className="how-it-works-section" id="how-it-works">
+        <div className="section-container">
+          <div className="section-header">
+            <span className="section-badge">SIMPLE 3-STEP PROCESS</span>
+            <h2 className="section-title">How to Earn Daily Cash on EarnByApps</h2>
+            <p className="section-desc">
+              Start earning within 2 minutes. No prior experience or complicated requirements.
+            </p>
+          </div>
+
+          <div className="steps-grid">
+            <div className="earner-step-card">
+              <div className="step-number-tag">STEP 01</div>
+              <div className="step-icon-circle">📥</div>
+              <h3 className="step-heading">Download & Open App</h3>
+              <p className="step-body">
+                Install our official Android APK (or use the web app). Log in with your Google account in 
+                5 seconds to claim your welcome bonus.
+              </p>
+            </div>
+
+            <div className="earner-step-card featured-step">
+              <div className="step-number-tag">STEP 02</div>
+              <div className="step-icon-circle">📱</div>
+              <h3 className="step-heading">Complete Easy App Tasks</h3>
+              <p className="step-body">
+                Browse high-paying offers on the live Offerwall. Test new apps, complete quick registrations, 
+                or give 5-star ratings to accumulate coins.
+              </p>
+            </div>
+
+            <div className="earner-step-card">
+              <div className="step-number-tag">STEP 03</div>
+              <div className="step-icon-circle">💰</div>
+              <h3 className="step-heading">Instant UPI Cashout</h3>
+              <p className="step-body">
+                Enter your UPI ID (Google Pay, PhonePe, Paytm). Hit withdraw starting at ₹20 and receive the 
+                real money in your bank account in 2 minutes!
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* COMPREHENSIVE STYLES */}
+
+
+      {/* 9. FREQUENTLY ASKED QUESTIONS */}
+      <section className="faq-section" id="faq">
+        <div className="section-container">
+          <div className="section-header">
+            <span className="section-badge">FREQUENTLY ASKED QUESTIONS</span>
+            <h2 className="section-title">All Your Doubts Resolved</h2>
+            <p className="section-desc">Got questions about earning, rewards, or payments? Find answers below.</p>
+          </div>
+
+          <div className="faq-accordion-list">
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div 
+                  key={idx} 
+                  className={`faq-accordion-item ${isOpen ? 'open' : ''}`}
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                >
+                  <div className="faq-question-row">
+                    <h3 className="faq-q-text">{faq.q}</h3>
+                    <span className="faq-toggle-icon">{isOpen ? '−' : '+'}</span>
+                  </div>
+                  {isOpen && (
+                    <div className="faq-answer-box">
+                      <p>{faq.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+
+      {/* 11. DEDICATED EARNER FOOTER & BUSINESS LINK */}
+      <footer className="earner-footer">
+        <div className="section-container footer-flex">
+          <div className="footer-left">
+            <div className="footer-brand-row">
+              <AppLogo size={32} />
+              <BrandLogo fontSize="1.35rem" />
+            </div>
+            <p className="footer-tagline">
+              India’s premier daily cash reward platform. Earn real money by completing simple app tasks, 
+              surveys, and inviting friends.
+            </p>
+            <div className="footer-partner-link-box">
+              <span>Are you a business, brand, or app developer?</span>
+              <button 
+                type="button"
+                onClick={() => {
+                  setActiveMode('grow');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }} 
+                className="footer-business-link"
+                style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', font: 'inherit' }}
+              >
+                Switch to "To Grow" & Launch Campaigns →
+              </button>
+            </div>
+          </div>
+
+          <div className="footer-right-links">
+            <div className="footer-col">
+              <h4>Quick Links</h4>
+              <Link href="/offerwall">Live Offerwall</Link>
+              <Link href="#how-it-works">How It Works</Link>
+              <Link href="#faq">FAQs</Link>
+              <Link href="/login">User Login</Link>
+            </div>
+            <div className="footer-col">
+              <h4>Legal & Safety</h4>
+              <Link href="/partner/terms">Terms of Service</Link>
+              <Link href="/partner/privacy">Privacy Policy</Link>
+              <Link href="/business">Business / Partner Portal</Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="footer-bottom-bar">
+          <p>© {new Date().getFullYear()} EarnByApps. All rights reserved. Made with ❤️ for Indian Earners.</p>
+        </div>
+      </footer>
+
+      {/* 12. STICKY MOBILE DOWNLOAD BAR */}
+      {showStickyBar && (
+        <div className="sticky-mobile-bar">
+          <div className="sticky-bar-content">
+            <div className="sticky-app-info">
+              <AppLogo size={32} />
+              <div>
+                <div className="sticky-app-title">EarnByApps APK</div>
+                <div className="sticky-app-sub">⭐ 4.7 • 32 MB • Free</div>
+              </div>
+            </div>
+            <a 
+              href={apkDownloadUrl}
+              download="EarnByApps-v1.0.0.apk"
+              className="sticky-download-btn"
+            >
+              Download App
+            </a>
+          </div>
+        </div>
+      )}
+        </main>
+      )}
+
+      {/* SCOPED COMPREHENSIVE STYLING */}
       <style>{`
-        .landing-page-main {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
+        .home-root-wrapper {
           width: 100%;
-          padding-bottom: 80px;
-          box-sizing: border-box;
+          min-height: 100vh;
+          background-color: var(--bg-dark, #f8fafc);
+          color: var(--text-primary, #0f172a);
           overflow-x: hidden;
+          box-sizing: border-box;
         }
 
-        /* Hero */
-        .landing-hero-section {
+        .earner-homepage-main {
           width: 100%;
-          display: flex;
-          justify-content: center;
-          padding: 40px 24px 20px;
+          min-height: 100vh;
+          background-color: var(--bg-dark, #f8fafc);
+          color: var(--text-primary, #0f172a);
+          font-family: inherit;
+          overflow-x: hidden;
           box-sizing: border-box;
         }
-        .landing-content-container {
-          max-width: 860px;
-          width: 100%;
-          text-align: center;
+
+
+
+
+
+        /* 2. HERO SECTION */
+        .earner-hero-section {
+          padding: 40px 24px 60px;
+          max-width: 1240px;
+          margin: 0 auto;
+          box-sizing: border-box;
+        }
+        .hero-container {
+          display: grid;
+          grid-template-columns: 1.15fr 0.85fr;
+          gap: 48px;
+          align-items: center;
+        }
+        .hero-trust-tag {
+          display: inline-block;
+          background: rgba(245, 158, 11, 0.12);
+          border: 1px solid rgba(245, 158, 11, 0.35);
+          color: #b45309;
+          font-size: 0.85rem;
+          font-weight: 700;
+          padding: 6px 14px;
+          border-radius: 20px;
+          margin-bottom: 20px;
+        }
+        .hero-title {
+          font-size: 3rem;
+          font-weight: 900;
+          line-height: 1.18;
+          margin: 0 0 18px 0;
+          letter-spacing: -0.02em;
+          color: var(--text-primary, #0f172a);
+        }
+        .highlight-gradient {
+          background: linear-gradient(135deg, #059669 0%, #10b981 50%, #d97706 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+          font-size: 1.1rem;
+          line-height: 1.65;
+          color: var(--text-secondary, #475569);
+          margin: 0 0 28px 0;
+          max-width: 580px;
+        }
+        .hero-subtitle strong {
+          color: var(--text-primary, #0f172a);
+        }
+
+        /* Hero Action Buttons */
+        .hero-actions-row {
           display: flex;
-          flex-direction: column;
           align-items: center;
           gap: 16px;
-        }
-        .live-dot {
-          display: inline-block;
-          width: 8px;
-          height: 8px;
-          background: #10b981;
-          border-radius: 50%;
-          margin-right: 6px;
-          box-shadow: 0 0 10px #10b981;
-          animation: pulseDot 2s infinite ease-in-out;
-        }
-        @keyframes pulseDot {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.3); opacity: 0.6; }
-        }
-
-        .landing-hero-subtitle {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          width: 100%;
-          max-width: 700px;
-          margin: 0 auto;
-          font-size: 1.35rem;
-          color: var(--text-secondary);
-          line-height: 1.4;
-        }
-        .landing-hero-tagline {
-          font-size: 0.95rem;
-          color: var(--text-muted);
-          margin-top: -6px;
-          margin-bottom: 8px;
-          font-weight: 500;
-          letter-spacing: 0.02em;
-        }
-        .static-part {
-          flex: 1;
-          text-align: right;
-          white-space: nowrap;
-        }
-        .dynamic-part {
-          flex: 1;
-          text-align: left;
-          color: var(--accent-indigo);
-          font-weight: 800;
-          position: relative;
-          white-space: nowrap;
-        }
-        .typing-cursor {
-          display: inline-block;
-          width: 3px;
-          height: 1.25rem;
-          background-color: var(--accent-indigo);
-          margin-left: 2px;
-          vertical-align: text-bottom;
-          animation: blink 0.75s step-end infinite;
-        }
-        @keyframes blink {
-          from, to { background-color: transparent }
-          50% { background-color: var(--accent-indigo); }
-        }
-
-        /* Promo card refinements */
-        .promo-container-box {
-          position: relative;
-          max-width: 640px;
-          width: 100%;
-          border: 1px solid var(--border-color);
-          border-radius: 20px;
-          padding: 28px 28px 22px;
-          background: var(--hero-card-bg);
-          box-shadow: var(--shadow-premium);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          backdrop-filter: blur(16px);
-          transition: transform 0.25s ease, border-color 0.25s ease;
-        }
-        .promo-container-box:hover {
-          border-color: var(--accent-indigo);
-          transform: translateY(-2px);
-        }
-        .promo-badge-tag {
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          background: rgba(79, 70, 229, 0.12);
-          color: #818cf8;
-          padding: 4px 12px;
-          border-radius: 20px;
-          margin-bottom: 12px;
-          border: 1px solid rgba(79, 70, 229, 0.25);
-        }
-        .promo-actions-row {
-          display: flex;
-          gap: 12px;
-          justify-content: center;
-          align-items: center;
           flex-wrap: wrap;
-          margin-bottom: 16px;
+          margin-bottom: 24px;
         }
-        .secondary-outline-btn {
-          padding: 10px 22px;
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: var(--text-primary);
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid var(--border-color);
-          border-radius: 10px;
-          text-decoration: none;
-          transition: all 0.2s ease;
+        .main-apk-download-btn {
           display: inline-flex;
           align-items: center;
-        }
-        .secondary-outline-btn:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: var(--text-secondary);
-        }
-        .apk-download-btn {
-          gap: 8px;
-          background: rgba(16, 185, 129, 0.08);
-          border: 1px solid rgba(16, 185, 129, 0.35);
-          color: var(--text-primary);
-        }
-        .apk-download-btn:hover {
-          background: rgba(16, 185, 129, 0.16);
-          border-color: #10b981;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
-        }
-        .apk-badge-tag {
-          font-size: 0.68rem;
-          background: rgba(16, 185, 129, 0.2);
-          color: #059669;
+          gap: 14px;
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: #ffffff;
+          text-decoration: none;
+          padding: 14px 24px;
+          border-radius: 14px;
           font-weight: 700;
-          padding: 2px 6px;
-          border-radius: 4px;
-          letter-spacing: 0.5px;
+          transition: all 0.25s ease;
+          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+          border: 1px solid rgba(52, 211, 153, 0.4);
         }
-        .promo-footer-note {
-          display: flex;
-          gap: 16px;
-          font-size: 0.78rem;
-          color: var(--text-muted);
-          flex-wrap: wrap;
-          justify-content: center;
+        .main-apk-download-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 28px rgba(16, 185, 129, 0.45);
+          filter: brightness(1.06);
         }
-
-        /* Common Section Layout */
-        .landing-section {
-          width: 100%;
-          max-width: 1160px;
-          margin: 64px auto 0;
-          padding: 0 24px;
-          box-sizing: border-box;
-        }
-        .section-header-block {
-          text-align: center;
-          max-width: 680px;
-          margin: 0 auto 40px;
-        }
-        .section-pill {
-          display: inline-block;
-          font-size: 0.75rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.08);
-          border: 1px solid rgba(79, 70, 229, 0.2);
-          padding: 4px 14px;
-          border-radius: 999px;
-          margin-bottom: 12px;
-        }
-        .section-main-heading {
-          font-family: var(--font-display);
-          font-size: 2.2rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          color: var(--text-primary);
-          line-height: 1.25;
-          margin-bottom: 12px;
-        }
-        .section-lead-text {
-          font-size: 1.05rem;
-          color: var(--text-secondary);
-          line-height: 1.6;
-        }
-
-        /* 2. Stats Bar Section */
-        .landing-stats-section {
-          width: 100%;
-          max-width: 1160px;
-          margin: 40px auto 0;
-          padding: 0 24px;
-          box-sizing: border-box;
-        }
-        .stats-bar-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-          background: var(--hero-card-bg);
-          border: 1px solid var(--border-color);
-          border-radius: 20px;
-          padding: 28px 24px;
-          box-shadow: var(--shadow-lg);
-          backdrop-filter: blur(12px);
-        }
-        .stat-card {
-          text-align: center;
-          border-right: 1px solid var(--border-color);
-          padding: 0 12px;
-        }
-        .stat-card:last-child {
-          border-right: none;
-        }
-        .stat-number {
-          font-family: var(--font-display);
-          font-size: 2.3rem;
-          font-weight: 900;
-          color: #818cf8;
-          letter-spacing: -0.03em;
-          line-height: 1.1;
-          margin-bottom: 6px;
-        }
-        body.light-theme .stat-number {
-          color: #4f46e5;
-        }
-        .stat-label {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: 4px;
-        }
-        .stat-sub {
-          font-size: 0.78rem;
-          color: var(--text-muted);
-        }
-
-        /* 3. Steps Grid */
-        .steps-container-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-        }
-        .step-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 18px;
-          padding: 32px 24px;
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          transition: transform 0.25s ease, border-color 0.25s ease;
-        }
-        .step-card:hover {
-          transform: translateY(-4px);
-          border-color: var(--accent-indigo);
-        }
-        .featured-step {
-          background: linear-gradient(180deg, rgba(79, 70, 229, 0.05) 0%, var(--bg-card) 100%);
-          border-color: rgba(79, 70, 229, 0.35);
-        }
-        .step-number-bubble {
-          font-family: var(--font-display);
-          font-size: 0.85rem;
-          font-weight: 800;
-          color: var(--accent-indigo);
-          background: rgba(79, 70, 229, 0.1);
-          padding: 4px 10px;
-          border-radius: 8px;
-          margin-bottom: 16px;
-        }
-        .step-icon {
-          font-size: 2rem;
-          margin-bottom: 14px;
-        }
-        .step-title {
-          font-family: var(--font-display);
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: 10px;
-        }
-        .step-desc {
-          font-size: 0.9rem;
-          color: var(--text-secondary);
-          line-height: 1.6;
-          margin-bottom: 20px;
-          flex-grow: 1;
-        }
-        .step-tag {
-          font-size: 0.75rem;
-          font-weight: 600;
-          color: var(--accent-teal);
-          background: rgba(13, 148, 136, 0.1);
-          padding: 4px 10px;
-          border-radius: 20px;
-        }
-
-        /* 4. Channels Grid */
-        .channels-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 20px;
-        }
-        .channel-box {
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          transition: all 0.2s ease;
-        }
-        .channel-box:hover {
-          border-color: var(--accent-indigo);
-          background: var(--bg-card-hover);
-          transform: translateY(-3px);
-        }
-        .channel-icon-wrapper {
-          width: 44px;
-          height: 44px;
+        .apk-btn-icon-wrapper {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.04);
-          border-radius: 12px;
-          border: 1px solid var(--border-color);
-          margin-bottom: 16px;
+          background: rgba(255, 255, 255, 0.2);
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
         }
-        .channel-icon-wrapper svg {
-          width: 26px !important;
-          height: 26px !important;
-        }
-        .channel-name {
-          font-family: var(--font-display);
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin-bottom: 8px;
-        }
-        .channel-desc {
-          font-size: 0.85rem;
-          color: var(--text-secondary);
-          line-height: 1.5;
-          margin-bottom: 16px;
-          flex-grow: 1;
-        }
-        .channel-badge {
-          font-size: 0.72rem;
-          font-weight: 700;
-          color: #818cf8;
-          background: rgba(79, 70, 229, 0.1);
-          padding: 3px 8px;
-          border-radius: 6px;
-        }
-
-        /* 5. Comparison Table */
-        .comparison-table-wrapper {
-          overflow-x: auto;
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 20px;
-          box-shadow: var(--shadow-lg);
-        }
-        .comparison-table {
-          width: 100%;
-          border-collapse: collapse;
+        .apk-btn-text-wrapper {
+          display: flex;
+          flex-direction: column;
           text-align: left;
         }
-        .comparison-table th {
-          padding: 20px 24px;
-          font-family: var(--font-display);
-          font-size: 1.05rem;
+        .apk-btn-sub {
+          font-size: 0.68rem;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          opacity: 0.9;
+          font-weight: 800;
+        }
+        .apk-btn-main {
+          font-size: 1.15rem;
+          font-weight: 800;
+        }
+        .apk-file-badge {
+          background: rgba(0, 0, 0, 0.22);
+          font-size: 0.72rem;
+          padding: 3px 8px;
+          border-radius: 6px;
           font-weight: 700;
-          color: var(--text-primary);
-          border-bottom: 1px solid var(--border-color);
-          background: rgba(255, 255, 255, 0.02);
         }
-        .comparison-table th.highlight-col {
-          color: #818cf8;
-          background: rgba(79, 70, 229, 0.08);
-          border-left: 1px solid rgba(79, 70, 229, 0.2);
-          border-right: 1px solid rgba(79, 70, 229, 0.2);
+
+
+        /* Micro Trust Points */
+        .hero-micro-trust {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+          margin-bottom: 32px;
+          font-size: 0.86rem;
+          color: var(--text-secondary, #475569);
         }
-        .comparison-table td {
-          padding: 18px 24px;
-          border-bottom: 1px solid var(--border-color);
-          font-size: 0.9rem;
-        }
-        .comparison-table tr:last-child td {
-          border-bottom: none;
-        }
-        .feature-cell strong {
-          display: block;
-          color: var(--text-primary);
-          margin-bottom: 2px;
-        }
-        .feature-cell span {
-          color: var(--text-muted);
-          font-size: 0.8rem;
-        }
-        .comparison-table td.highlight-col {
-          background: rgba(79, 70, 229, 0.04);
-          border-left: 1px solid rgba(79, 70, 229, 0.2);
-          border-right: 1px solid rgba(79, 70, 229, 0.2);
-          font-weight: 600;
-        }
-        .success-cell {
-          color: var(--text-primary);
+        .micro-trust-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
         .check-icon {
           color: #10b981;
           font-weight: 900;
-          margin-right: 6px;
-        }
-        .danger-cell {
-          color: var(--text-secondary);
-        }
-        .cross-icon {
-          color: #ef4444;
-          font-weight: 900;
-          margin-right: 6px;
         }
 
-        /* 8. FAQ Accordion */
-        .faq-accordion-container {
-          max-width: 800px;
-          margin: 0 auto;
+        /* Stats Strip */
+        .hero-stats-strip {
+          display: flex;
+          align-items: center;
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 16px;
+          padding: 16px 24px;
+          max-width: 580px;
+          justify-content: space-between;
+          box-shadow: var(--shadow-sm);
+        }
+        .hero-stat-box {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+        }
+        .hero-stat-box .stat-number {
+          font-size: 1.35rem;
+          font-weight: 900;
+          color: #d97706;
+        }
+        .hero-stat-box .stat-label {
+          font-size: 0.75rem;
+          color: var(--text-muted, #64748b);
+          font-weight: 600;
+          margin-top: 2px;
+        }
+
+        /* Right Hero Mockup */
+        .hero-right-mockup {
+          display: flex;
+          justify-content: center;
+          position: relative;
+        }
+        .phone-wrapper {
+          position: relative;
+          width: 310px;
+        }
+        .floating-badge {
+          position: absolute;
+          background: rgba(255, 255, 255, 0.96);
+          border: 1px solid var(--border-color, #e2e8f0);
+          backdrop-filter: blur(12px);
+          padding: 10px 14px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          z-index: 10;
+          box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+        .badge-top-right {
+          top: 30px;
+          right: -36px;
+        }
+        .badge-bottom-left {
+          bottom: 40px;
+          left: -40px;
+        }
+        .badge-icon {
+          font-size: 1.3rem;
+        }
+        .badge-title {
+          font-weight: 800;
+          font-size: 0.88rem;
+          color: #059669;
+        }
+        .badge-sub {
+          font-size: 0.7rem;
+          color: var(--text-muted, #64748b);
+        }
+        .animate-float-slow {
+          animation: floatSlow 4s ease-in-out infinite;
+        }
+        .animate-float-delay {
+          animation: floatSlow 4s ease-in-out 2s infinite;
+        }
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+
+        /* Smartphone Shell (Clean hardware design) */
+        .phone-shell {
+          width: 300px;
+          height: 600px;
+          background: #0f172a;
+          border: 6px solid #334155;
+          border-radius: 42px;
+          box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25), 0 0 40px rgba(16, 185, 129, 0.1);
+          overflow: hidden;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        }
+        .phone-notch {
+          height: 24px;
+          background: #1e293b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        }
+        .phone-camera {
+          width: 8px;
+          height: 8px;
+          background: #000;
+          border-radius: 50%;
+        }
+        .phone-speaker {
+          width: 36px;
+          height: 4px;
+          background: #475569;
+          border-radius: 4px;
+        }
+        .phone-screen {
+          flex: 1;
+          background: #0b1120;
+          padding: 14px;
           display: flex;
           flex-direction: column;
           gap: 12px;
+          overflow: hidden;
         }
-        .faq-item {
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: 14px;
+        .mockup-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .mockup-brand {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .mockup-brand-name {
+          font-weight: 800;
+          font-size: 0.85rem;
+          color: #ffffff;
+        }
+        .mockup-user-chip {
+          background: rgba(16, 185, 129, 0.15);
+          color: #10b981;
+          font-size: 0.78rem;
+          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .mockup-wallet-card {
+          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+          border-radius: 16px;
+          padding: 12px 14px;
+          color: #ffffff;
+        }
+        .mockup-wallet-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .mockup-wallet-label {
+          font-size: 0.68rem;
+          opacity: 0.8;
+          text-transform: uppercase;
+          font-weight: 700;
+        }
+        .mockup-wallet-bal {
+          font-size: 1.25rem;
+          font-weight: 900;
+          margin-top: 2px;
+        }
+        .mockup-withdraw-btn {
+          background: #f59e0b;
+          color: #000000;
+          border: none;
+          font-size: 0.75rem;
+          font-weight: 800;
+          padding: 6px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+        }
+        .mockup-min-note {
+          font-size: 0.65rem;
+          opacity: 0.75;
+          margin-top: 6px;
+        }
+        .mockup-action-chips {
+          display: flex;
+          gap: 6px;
+        }
+        .mockup-chip {
+          font-size: 0.68rem;
+          font-weight: 700;
+          background: rgba(255, 255, 255, 0.06);
+          padding: 4px 8px;
+          border-radius: 8px;
+          color: #94a3b8;
+        }
+        .mockup-chip.active {
+          background: rgba(245, 158, 11, 0.2);
+          color: #f59e0b;
+        }
+        .mockup-tasks-list {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          flex: 1;
+        }
+        .mockup-task-item {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          padding: 8px 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .mockup-task-icon {
+          font-size: 1.2rem;
+        }
+        .mockup-task-info {
+          flex: 1;
+        }
+        .mockup-task-title {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #ffffff;
+        }
+        .mockup-task-desc {
+          font-size: 0.62rem;
+          color: #64748b;
+        }
+        .mockup-task-reward {
+          text-align: right;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 3px;
+        }
+        .mockup-task-reward span {
+          font-size: 0.78rem;
+          font-weight: 800;
+          color: #10b981;
+        }
+        .mockup-task-btn {
+          background: rgba(16, 185, 129, 0.15);
+          color: #10b981;
+          border: none;
+          font-size: 0.62rem;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+        .mockup-bottom-nav {
+          display: flex;
+          justify-content: space-around;
+          padding-top: 8px;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          font-size: 0.65rem;
+          color: #64748b;
+        }
+        .nav-tab.active {
+          color: #f59e0b;
+          font-weight: 800;
+        }
+
+        /* 3. PAYMENT PARTNERS STRIP */
+        .payment-partners-section {
+          background: var(--bg-card, #ffffff);
+          border-top: 1px solid var(--border-color, #e2e8f0);
+          border-bottom: 1px solid var(--border-color, #e2e8f0);
+          padding: 24px 20px;
+        }
+        .partners-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+          text-align: center;
+        }
+        .partners-title {
+          font-size: 0.8rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: #64748b;
+        }
+        .partners-pills-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          justify-content: center;
+        }
+        .partner-pill {
+          background: var(--bg-dark, #f8fafc);
+          border: 1px solid var(--border-color, #e2e8f0);
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 0.86rem;
+          font-weight: 600;
+          color: var(--text-primary, #0f172a);
+          box-shadow: var(--shadow-sm);
+        }
+
+        /* COMMON SECTION STYLES */
+        .section-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 60px 24px;
+          box-sizing: border-box;
+        }
+        .section-header {
+          text-align: center;
+          max-width: 680px;
+          margin: 0 auto 44px;
+        }
+        .section-badge {
+          display: inline-block;
+          font-size: 0.72rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #b45309;
+          background: rgba(245, 158, 11, 0.12);
+          padding: 4px 12px;
+          border-radius: 16px;
+          margin-bottom: 10px;
+        }
+        .section-title {
+          font-size: 2.2rem;
+          font-weight: 900;
+          margin: 0 0 12px;
+          line-height: 1.25;
+          color: var(--text-primary, #0f172a);
+        }
+        .section-desc {
+          font-size: 1.02rem;
+          color: var(--text-secondary, #475569);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        /* 4. HOW IT WORKS GRID */
+        .steps-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 28px;
+        }
+        .earner-step-card {
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 20px;
+          padding: 32px 24px;
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          transition: all 0.25s ease;
+          box-shadow: var(--shadow-sm);
+        }
+        .earner-step-card:hover {
+          transform: translateY(-4px);
+          border-color: rgba(245, 158, 11, 0.5);
+          box-shadow: var(--shadow-md);
+        }
+        .earner-step-card.featured-step {
+          background: linear-gradient(180deg, rgba(16, 185, 129, 0.04) 0%, #ffffff 100%);
+          border-color: rgba(16, 185, 129, 0.35);
+        }
+        .step-number-tag {
+          font-size: 0.72rem;
+          font-weight: 900;
+          color: #b45309;
+          letter-spacing: 0.08em;
+          margin-bottom: 16px;
+        }
+        .step-icon-circle {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+          background: rgba(245, 158, 11, 0.12);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.8rem;
+          margin-bottom: 20px;
+        }
+        .earner-step-card.featured-step .step-icon-circle {
+          background: rgba(16, 185, 129, 0.15);
+        }
+        .step-heading {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: var(--text-primary, #0f172a);
+          margin: 0 0 10px;
+        }
+        .step-body {
+          font-size: 0.92rem;
+          color: var(--text-secondary, #475569);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+
+
+        /* 9. FAQ ACCORDION */
+        .faq-accordion-list {
+          max-width: 820px;
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .faq-accordion-item {
+          background: var(--bg-card, #ffffff);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 16px;
           padding: 20px 24px;
           cursor: pointer;
-          transition: border-color 0.2s ease, background-color 0.2s ease;
+          transition: all 0.2s ease;
+          box-shadow: var(--shadow-sm);
         }
-        .faq-item:hover, .faq-item-open {
-          border-color: var(--accent-indigo);
-          background: var(--bg-card-hover);
+        .faq-accordion-item:hover, .faq-accordion-item.open {
+          border-color: #f59e0b;
+          background: #fffdfa;
         }
         .faq-question-row {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          gap: 16px;
         }
-        .faq-question-text {
-          font-family: var(--font-display);
+        .faq-q-text {
           font-size: 1.05rem;
           font-weight: 700;
-          color: var(--text-primary);
+          color: var(--text-primary, #0f172a);
           margin: 0;
         }
         .faq-toggle-icon {
           font-size: 1.4rem;
-          font-weight: 600;
-          color: var(--accent-indigo);
+          color: #f59e0b;
+          font-weight: bold;
         }
-        .faq-answer-block {
-          margin-top: 14px;
-          padding-top: 14px;
-          border-top: 1px solid var(--border-color);
-          font-size: 0.92rem;
-          color: var(--text-secondary);
+        .faq-answer-box {
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid var(--border-color, #e2e8f0);
+          color: var(--text-secondary, #475569);
           line-height: 1.6;
+          font-size: 0.94rem;
+        }
+        .faq-answer-box p {
+          margin: 0;
         }
 
-        /* 9. Final Bottom CTA Banner */
-        .landing-bottom-cta-section {
-          width: 100%;
-          max-width: 1160px;
-          margin: 80px auto 0;
-          padding: 0 24px;
-          box-sizing: border-box;
+
+        /* 11. DEDICATED EARNER FOOTER & BUSINESS LINK */
+        .earner-footer {
+          border-top: 1px solid var(--border-color, #e2e8f0);
+          background: var(--bg-card, #ffffff);
+          padding: 60px 24px 24px;
         }
-        .final-cta-card {
-          position: relative;
-          background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(13, 148, 136, 0.12) 100%), var(--bg-card);
-          border: 1px solid rgba(79, 70, 229, 0.3);
-          border-radius: 28px;
-          padding: 60px 40px;
-          text-align: center;
-          box-shadow: var(--shadow-premium);
-          overflow: hidden;
+        .footer-flex {
+          display: flex;
+          justify-content: space-between;
+          gap: 48px;
+          flex-wrap: wrap;
+          padding-bottom: 40px;
+          border-bottom: 1px solid var(--border-color, #e2e8f0);
         }
-        .cta-glow-circle {
-          position: absolute;
-          width: 300px;
-          height: 300px;
-          background: radial-gradient(circle, rgba(79, 70, 229, 0.35) 0%, transparent 70%);
-          top: -100px;
-          left: 50%;
-          transform: translateX(-50%);
-          pointer-events: none;
+        .footer-left {
+          max-width: 420px;
         }
-        .final-cta-content {
-          position: relative;
-          z-index: 1;
-          max-width: 680px;
-          margin: 0 auto;
-        }
-        .final-cta-title {
-          font-family: var(--font-display);
-          font-size: 2.3rem;
-          font-weight: 900;
-          color: var(--text-primary);
-          line-height: 1.25;
-          letter-spacing: -0.03em;
+        .footer-brand-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
           margin-bottom: 14px;
         }
-        .final-cta-subtitle {
-          font-size: 1.05rem;
-          color: var(--text-secondary);
+        .footer-tagline {
+          font-size: 0.88rem;
+          color: var(--text-secondary, #475569);
           line-height: 1.6;
-          margin-bottom: 32px;
+          margin: 0 0 20px;
         }
-        .final-cta-buttons {
+        .footer-partner-link-box {
+          background: var(--bg-dark, #f8fafc);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 12px;
+          padding: 12px 16px;
+          font-size: 0.82rem;
           display: flex;
-          justify-content: center;
-          gap: 16px;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .footer-business-link {
+          color: #d97706;
+          font-weight: 700;
+          text-decoration: none;
+        }
+        .footer-business-link:hover {
+          text-decoration: underline;
+        }
+        .footer-right-links {
+          display: flex;
+          gap: 60px;
           flex-wrap: wrap;
         }
-        .final-large-btn {
-          padding: 14px 28px;
-          font-size: 1rem;
+        .footer-col {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .footer-col h4 {
+          font-size: 0.95rem;
+          font-weight: 800;
+          margin: 0 0 6px;
+          color: var(--text-primary, #0f172a);
+        }
+        .footer-col a {
+          color: var(--text-secondary, #475569);
+          text-decoration: none;
+          font-size: 0.86rem;
+          transition: color 0.2s;
+        }
+        .footer-col a:hover {
+          color: #059669;
+        }
+        .footer-bottom-bar {
+          text-align: center;
+          padding-top: 24px;
+          font-size: 0.82rem;
+          color: #64748b;
         }
 
-        /* Responsive Breakpoints */
-        @media (max-width: 960px) {
-          .stats-bar-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
+        /* 12. STICKY MOBILE DOWNLOAD BAR */
+        .sticky-mobile-bar {
+          display: none;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(255, 255, 255, 0.96);
+          backdrop-filter: blur(16px);
+          border-top: 1px solid var(--border-color, #e2e8f0);
+          padding: 12px 16px;
+          z-index: 999;
+          box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .sticky-bar-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          max-width: 480px;
+          margin: 0 auto;
+        }
+        .sticky-app-info {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .sticky-app-title {
+          font-weight: 800;
+          font-size: 0.92rem;
+          color: var(--text-primary, #0f172a);
+        }
+        .sticky-app-sub {
+          font-size: 0.72rem;
+          color: #059669;
+          font-weight: 700;
+        }
+        .sticky-download-btn {
+          background: #10b981;
+          color: #ffffff;
+          font-weight: 800;
+          padding: 10px 18px;
+          border-radius: 10px;
+          text-decoration: none;
+          font-size: 0.88rem;
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
+        @media (max-width: 992px) {
+          .hero-container {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 40px;
           }
-          .stat-card {
-            border-right: none;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 16px;
+          .hero-left-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
           }
-          .stat-card:nth-child(3), .stat-card:nth-child(4) {
-            border-bottom: none;
-            padding-bottom: 0;
+          .hero-title {
+            font-size: 2.4rem;
           }
-          .steps-container-grid, .channels-grid {
+          .hero-actions-row {
+            justify-content: center;
+          }
+          .hero-micro-trust {
+            justify-content: center;
+          }
+          .hero-stats-strip {
+            margin: 0 auto;
+          }
+          .steps-grid {
             grid-template-columns: 1fr;
           }
         }
 
-        @media (max-width: 640px) {
-          .landing-hero-title {
-            font-size: 2.3rem;
+        @media (max-width: 768px) {
+          .sticky-mobile-bar {
+            display: block;
           }
-          .stats-bar-grid {
-            grid-template-columns: 1fr;
+          .earner-hero-section {
+            padding: 24px 16px 40px;
           }
-          .stat-card {
-            border-bottom: 1px solid var(--border-color);
+          .hero-title {
+            font-size: 1.95rem;
           }
-          .stat-card:last-child {
-            border-bottom: none;
+          .hero-subtitle {
+            font-size: 0.95rem;
           }
-          .final-cta-title {
-            font-size: 1.75rem;
+          .main-apk-download-btn {
+            width: 100%;
+            justify-content: center;
           }
-          .final-cta-card {
-            padding: 40px 20px;
+
+          .hero-stats-strip {
+            width: 100%;
+            padding: 12px 14px;
+          }
+          .hero-stat-box .stat-number {
+            font-size: 1.1rem;
+          }
+          .badge-top-right, .badge-bottom-left {
+            display: none;
           }
         }
       `}</style>
 
-    </main>
+    </div>
   );
 }
