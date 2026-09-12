@@ -10,7 +10,7 @@ import BrandLogo from './BrandLogo';
 
 export default function Header() {
   const pathname = usePathname();
-  const { userRole, userProfile, walletBalance, login, logout, theme, toggleTheme } = useApp();
+  const { userRole, userProfile, walletBalance, login, logout } = useApp();
   const [showAuthDropdown, setShowAuthDropdown] = useState(false);
   const { data: session } = useSession();
 
@@ -32,16 +32,6 @@ export default function Header() {
         </Link>
         
         <div className="header-actions">
-
-          {/* Theme switcher */}
-          <button 
-            onClick={toggleTheme} 
-            className="theme-toggle-btn"
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
-
           {/* Earner Live Wallet Balance Badge */}
           {((session && session.user) || userProfile) && (
             <button

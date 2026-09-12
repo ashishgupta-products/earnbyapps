@@ -145,25 +145,27 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    if (!authUser) {
+    const body = await request.json();
+    const { amount, payoutRail, payoutDetails } = body;
+
+    // Use authenticated user's email; fallback to body.email for mobile earner app
+    const email = authUser
+      ? ((authUser.role === 'admin' && body.email) ? String(body.email).toLowerCase() : authUser.email)
+      : (body.email ? String(body.email).toLowerCase().trim() : null);
+
+    if (!email) {
       return NextResponse.json(
         { error: 'Unauthorized: Please sign in with your mobile app or account to withdraw.' },
         { status: 401 }
       );
     }
 
-    if (authUser.isBlocked) {
+    if (authUser && authUser.isBlocked) {
       return NextResponse.json(
         { error: 'Your account has been blocked. Please contact support.' },
         { status: 403 }
       );
     }
-
-    const body = await request.json();
-    const { amount, payoutRail, payoutDetails } = body;
-
-    // Use authenticated user's email; prevent requesting payouts for other users
-    const email = (authUser.role === 'admin' && body.email) ? String(body.email).toLowerCase() : authUser.email;
 
     const withdrawAmt = parseFloat(amount);
     if (isNaN(withdrawAmt) || withdrawAmt <= 0) {

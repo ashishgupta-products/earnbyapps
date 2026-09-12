@@ -38,7 +38,7 @@ export async function getAuthenticatedUser(request: Request): Promise<Authentica
     // 2. Check NextAuth JWT Cookie / Token (Used by Web App)
     if (!email && !userId) {
       try {
-        const nextAuthSecret = process.env.NEXTAUTH_SECRET || 'earnbyapps-nextauth-secret-key-12345';
+        const nextAuthSecret = process.env.NEXTAUTH_SECRET || 'earnbyapps-super-secret-key-12345';
         const jwtPayload = await getToken({ 
           req: request as any, 
           secret: nextAuthSecret 

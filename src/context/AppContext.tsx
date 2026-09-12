@@ -271,11 +271,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         setUserProfile(null);
       }
 
-      if (storedTheme) {
-        setTheme(storedTheme);
-      } else {
-        setTheme('light');
-      }
+      // Ensure light theme is always active and clear legacy dark theme storage
+      localStorage.removeItem('eb_theme');
+      setTheme('light');
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
       
       if (storedApps) {
         setApps(JSON.parse(storedApps));
@@ -355,19 +355,11 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     loadSubmissions();
   }, []);
 
-  // Sync theme changes to body class
+  // Always maintain light-theme on body
   useEffect(() => {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-      document.body.classList.remove('dark-theme');
-    } else {
-      document.body.classList.add('dark-theme');
-      document.body.classList.remove('light-theme');
-    }
-    if (isInitialized) {
-      localStorage.setItem('eb_theme', theme);
-    }
-  }, [theme, isInitialized]);
+    document.body.classList.add('light-theme');
+    document.body.classList.remove('dark-theme');
+  }, []);
 
   // Sync state changes to localStorage
   useEffect(() => {
@@ -601,7 +593,7 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
   };
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    // Dark mode is not required; app stays in light theme
   };
 
   const addVerificationAssignment = (assignment: Omit<VerificationAssignment, 'id'>) => {

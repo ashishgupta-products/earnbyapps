@@ -89,84 +89,47 @@ export const authOptions = {
     })
   ],
   secret: process.env.NEXTAUTH_SECRET || "earnbyapps-super-secret-key-12345",
-  debug: true,
+  debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login"
   },
-  cookies: (process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL.includes("earnbyapps.com")) ? {
-    sessionToken: {
-      name: `__Secure-next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        domain: '.earnbyapps.com'
-      }
-    },
-    callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
-      options: {
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        domain: '.earnbyapps.com'
-      }
-    },
-    csrfToken: {
-      name: `next-auth.csrf-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        domain: '.earnbyapps.com'
-      }
-    },
-    pkceCodeVerifier: {
-      name: `next-auth.pkce.code_verifier`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        maxAge: 900,
-        domain: '.earnbyapps.com'
-      }
-    },
-    state: {
-      name: `next-auth.state`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-        maxAge: 900,
-        domain: '.earnbyapps.com'
-      }
-    }
-  } : undefined,
   callbacks: {
     async signIn({ user, account, profile }: { user: any; account: any; profile?: any }) {
       if (user && user.email && isDbConfigured) {
         try {
-          // Check if the user exists in our neon database users table
-          const existingUsers = await sql`SELECT * FROM users WHERE email = ${user.email}`;
+          const email = user.email.toLowerCase().trim();
+          // Check if the user exists in our neon database users table (case-insensitive)
+          const existingUsers = await sql`SELECT * FROM users WHERE LOWER(email) = ${email}`;
           if (existingUsers.length > 0 && existingUsers[0].is_blocked) {
             // Reject sign in for blocked users
             return false;
           }
-          if (account?.provider === "google" && existingUsers.length === 0) {
-            // User doesn't exist, insert them!
-            const fullName = user.name || 'Google User';
-            const role = user.email === 'admin@earnbyapps.com' || user.email === 'mayank.gupta.dev.1@gmail.com' || user.email === 'aashish.gupta.mails@gmail.com' ? 'admin' : 'user';
-            
-            const newId = crypto.randomUUID();
-            await sql`
-              INSERT INTO users (id, email, full_name, role, balance)
-              VALUES (${newId}, ${user.email}, ${fullName}, ${role}, 0.00)
-            `;
-            console.log(`Successfully registered new user via Google: ${user.email}`);
+          if (account?.provider === "google") {
+            const googleSub = profile?.sub || (user as any).id || null;
+            if (existingUsers.length === 0) {
+              // User doesn't exist, insert them!
+              const fullName = user.name || 'Google User';
+              const adminEmails = [
+                'admin@earnbyapps.com',
+                'mayank.gupta.dev.1@gmail.com',
+                'aashish.gupta.mails@gmail.com'
+              ];
+              const role = adminEmails.includes(email) ? 'admin' : 'user';
+              
+              const newId = crypto.randomUUID();
+              await sql`
+                INSERT INTO users (id, email, full_name, role, balance, google_sub)
+                VALUES (${newId}, ${email}, ${fullName}, ${role}, 0.00, ${googleSub})
+              `;
+              console.log(`Successfully registered new user via Google: ${email}`);
+            } else if (googleSub && !existingUsers[0].google_sub) {
+              // Existing user signing in with Google - attach google_sub
+              try {
+                await sql`UPDATE users SET google_sub = ${googleSub} WHERE id = ${existingUsers[0].id}`;
+              } catch (updateErr) {
+                console.warn("Could not update google_sub:", updateErr);
+              }
+            }
           }
         } catch (err) {
           console.error("Error saving user to database during Google Sign In:", err);
@@ -174,34 +137,58 @@ export const authOptions = {
       }
       return true;
     },
-    async jwt({ token, user }: { token: any; user?: any }) {
+    async jwt({ token, user, account, profile }: { token: any; user?: any; account?: any; profile?: any }) {
       if (user) {
+        token.id = (user as any).id;
         token.role = (user as any).role;
         token.balance = (user as any).balance;
+      }
+      // If user signed in via Google or token id is not set, resolve from DB
+      if (token.email && (!token.id || !token.role) && isDbConfigured) {
+        try {
+          const email = token.email.toLowerCase().trim();
+          const dbUsers = await sql`SELECT id, role, balance FROM users WHERE LOWER(email) = ${email} LIMIT 1`;
+          if (dbUsers.length > 0) {
+            token.id = String(dbUsers[0].id);
+            token.role = dbUsers[0].role;
+            token.balance = Number(dbUsers[0].balance || 0);
+          }
+        } catch (dbErr) {
+          console.error("Error retrieving user in jwt callback:", dbErr);
+        }
       }
       return token;
     },
     async session({ session, token }: { session: any; token: any }) {
       if (session.user) {
-        if (isDbConfigured) {
+        const email = session.user.email ? session.user.email.toLowerCase().trim() : '';
+        const adminEmails = [
+          'admin@earnbyapps.com',
+          'mayank.gupta.dev.1@gmail.com',
+          'aashish.gupta.mails@gmail.com'
+        ];
+        const isAdmin = adminEmails.includes(email);
+
+        if (isDbConfigured && email) {
           try {
-            const dbUsers = await sql`SELECT role, balance FROM users WHERE email = ${session.user.email}`;
+            const dbUsers = await sql`SELECT id, role, balance FROM users WHERE LOWER(email) = ${email} LIMIT 1`;
             if (dbUsers.length > 0) {
+              (session.user as any).id = String(dbUsers[0].id);
               (session.user as any).role = dbUsers[0].role;
-              (session.user as any).balance = Number(dbUsers[0].balance);
+              (session.user as any).balance = Number(dbUsers[0].balance || 0);
             } else {
-              const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
+              (session.user as any).id = token.id || token.sub;
               (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
               (session.user as any).balance = token.balance || 0;
             }
           } catch (err) {
             console.error("Error retrieving user session role from database:", err);
-            const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
+            (session.user as any).id = token.id || token.sub;
             (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
             (session.user as any).balance = token.balance || 0;
           }
         } else {
-          const isAdmin = session.user.email === 'admin@earnbyapps.com' || session.user.email === 'mayank.gupta.dev.1@gmail.com' || session.user.email === 'aashish.gupta.mails@gmail.com';
+          (session.user as any).id = token.id || token.sub;
           (session.user as any).role = token.role || (isAdmin ? 'admin' : 'user');
           (session.user as any).balance = token.balance || 0;
         }

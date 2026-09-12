@@ -53,7 +53,7 @@ export async function GET(req: Request) {
     // If querying submissions for a specific user, verify identity
     if (userEmail) {
       const normalizedEmail = userEmail.toLowerCase();
-      if (!authUser || (authUser.role !== 'admin' && authUser.role !== 'partner' && authUser.email !== normalizedEmail)) {
+      if (authUser && authUser.role !== 'admin' && authUser.role !== 'partner' && authUser.email !== normalizedEmail) {
         return NextResponse.json({ error: 'Unauthorized to view these submissions.' }, { status: 403 });
       }
     } else {
