@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/earnbyapps.apk',
+        destination: '/EarnByApps%20v-1.0.0.apk',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
