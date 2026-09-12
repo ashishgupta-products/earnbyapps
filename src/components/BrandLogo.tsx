@@ -57,7 +57,7 @@ export default function BrandLogo({
           fontWeight: 800,
         }}
       >
-        <span style={{ color: '#3A5998', fontWeight: 800 }}>EarnBy</span>
+        <span style={{ color: '#4f46e5', fontWeight: 800 }}>EarnBy</span>
         <span style={{ color: '#EAA812', fontWeight: 800 }}>Apps</span>
       </span>
     </span>

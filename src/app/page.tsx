@@ -488,7 +488,7 @@ export default function Home() {
           color: var(--text-primary, #0f172a);
         }
         .highlight-gradient {
-          background: linear-gradient(135deg, #3A5998 0%, #2b4374 50%, #EAA812 100%);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #EAA812 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -515,19 +515,19 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           gap: 14px;
-          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
           color: #ffffff;
           text-decoration: none;
           padding: 14px 24px;
           border-radius: 14px;
           font-weight: 700;
           transition: all 0.25s ease;
-          box-shadow: 0 6px 20px rgba(58, 89, 152, 0.35);
-          border: 1px solid rgba(58, 89, 152, 0.5);
+          box-shadow: 0 6px 20px rgba(79, 70, 229, 0.35);
+          border: 1px solid rgba(79, 70, 229, 0.5);
         }
         .main-apk-download-btn:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 28px rgba(58, 89, 152, 0.5);
+          box-shadow: 0 10px 28px rgba(79, 70, 229, 0.5);
           filter: brightness(1.06);
         }
         .apk-btn-icon-wrapper {
@@ -579,7 +579,7 @@ export default function Home() {
           gap: 6px;
         }
         .check-icon {
-          color: #3A5998;
+          color: #4f46e5;
           font-weight: 900;
         }
 
@@ -649,7 +649,7 @@ export default function Home() {
         .badge-title {
           font-weight: 800;
           font-size: 0.88rem;
-          color: #3A5998;
+          color: #4f46e5;
         }
         .badge-sub {
           font-size: 0.7rem;
@@ -673,7 +673,7 @@ export default function Home() {
           background: #0f172a;
           border: 6px solid #334155;
           border-radius: 42px;
-          box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25), 0 0 40px rgba(58, 89, 152, 0.15);
+          box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25), 0 0 40px rgba(79, 70, 229, 0.15);
           overflow: hidden;
           position: relative;
           display: flex;
@@ -724,8 +724,8 @@ export default function Home() {
           color: #ffffff;
         }
         .mockup-user-chip {
-          background: rgba(58, 89, 152, 0.15);
-          color: #3A5998;
+          background: rgba(79, 70, 229, 0.15);
+          color: #4f46e5;
           font-size: 0.78rem;
           font-weight: 700;
           padding: 3px 8px;
@@ -827,11 +827,11 @@ export default function Home() {
         .mockup-task-reward span {
           font-size: 0.78rem;
           font-weight: 800;
-          color: #3A5998;
+          color: #4f46e5;
         }
         .mockup-task-btn {
-          background: rgba(58, 89, 152, 0.15);
-          color: #3A5998;
+          background: rgba(79, 70, 229, 0.15);
+          color: #4f46e5;
           border: none;
           font-size: 0.62rem;
           font-weight: 800;
@@ -952,8 +952,8 @@ export default function Home() {
           box-shadow: var(--shadow-md);
         }
         .earner-step-card.featured-step {
-          background: linear-gradient(180deg, rgba(58, 89, 152, 0.05) 0%, #ffffff 100%);
-          border-color: rgba(58, 89, 152, 0.35);
+          background: linear-gradient(180deg, rgba(79, 70, 229, 0.05) 0%, #ffffff 100%);
+          border-color: rgba(79, 70, 229, 0.35);
         }
         .step-number-tag {
           font-size: 0.72rem;
@@ -974,7 +974,7 @@ export default function Home() {
           margin-bottom: 20px;
         }
         .earner-step-card.featured-step .step-icon-circle {
-          background: rgba(58, 89, 152, 0.15);
+          background: rgba(79, 70, 229, 0.15);
         }
         .step-heading {
           font-size: 1.25rem;
@@ -1093,7 +1093,7 @@ export default function Home() {
           transition: color 0.2s;
         }
         .footer-col a:hover {
-          color: #3A5998;
+          color: #4f46e5;
         }
         .footer-bottom-bar {
           text-align: center;
@@ -1135,18 +1135,18 @@ export default function Home() {
         }
         .sticky-app-sub {
           font-size: 0.72rem;
-          color: #3A5998;
+          color: #4f46e5;
           font-weight: 700;
         }
         .sticky-download-btn {
-          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
           color: #ffffff;
           font-weight: 800;
           padding: 10px 18px;
           border-radius: 10px;
           text-decoration: none;
           font-size: 0.88rem;
-          box-shadow: 0 4px 12px rgba(58, 89, 152, 0.35);
+          box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
         }
 
         /* RESPONSIVE MEDIA QUERIES */

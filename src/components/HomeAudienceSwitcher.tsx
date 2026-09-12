@@ -88,8 +88,8 @@ export default function HomeAudienceSwitcher({
         }
         .switcher-glider.glider-earn {
           transform: translateX(0%);
-          background: linear-gradient(135deg, #3A5998 0%, #2b4374 100%);
-          box-shadow: 0 4px 14px rgba(58, 89, 152, 0.35);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
         }
         .switcher-glider.glider-grow {
           transform: translateX(100%);
