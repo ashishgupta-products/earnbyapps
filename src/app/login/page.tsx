@@ -30,12 +30,16 @@ function LoginForm() {
 
   useEffect(() => {
     if (errorParam) {
-      if (errorParam === 'OAuthSignin' || errorParam === 'OAuthCallback') {
-        setErrorMsg("Google Sign-In is not configured yet (GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET are not set in .env.local). Please use Email & Password below, or configure Google credentials.");
+      if (errorParam === 'OAuthSignin') {
+        setErrorMsg("Google Sign-In failed to start (OAuthSignin). Please ensure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are configured in your Vercel Environment Variables.");
+      } else if (errorParam === 'OAuthCallback') {
+        setErrorMsg("Google Sign-In callback failed (OAuthCallback). Please ensure 'https://www.earnbyapps.com/api/auth/callback/google' and 'https://earnbyapps.com/api/auth/callback/google' are added to Authorized redirect URIs in Google Cloud Console, and NEXTAUTH_URL is set in Vercel.");
       } else if (errorParam === 'CredentialsSignin') {
         setErrorMsg("Invalid email or password. Please try again.");
       } else if (errorParam === 'OAuthAccountNotLinked') {
         setErrorMsg("This email is already associated with another login method.");
+      } else if (errorParam === 'AccessDenied') {
+        setErrorMsg("Access denied. Your account may be blocked or restricted.");
       } else {
         setErrorMsg(`Sign-in error: ${errorParam}`);
       }

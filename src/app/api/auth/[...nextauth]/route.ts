@@ -88,10 +88,64 @@ export const authOptions = {
       }
     })
   ],
-  secret: process.env.NEXTAUTH_SECRET || "earnbyapps-nextauth-secret-key-12345",
+  secret: process.env.NEXTAUTH_SECRET || "earnbyapps-super-secret-key-12345",
+  debug: true,
   pages: {
     signIn: "/login"
   },
+  cookies: (process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL.includes("earnbyapps.com")) ? {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.earnbyapps.com'
+      }
+    },
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.earnbyapps.com'
+      }
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        domain: '.earnbyapps.com'
+      }
+    },
+    pkceCodeVerifier: {
+      name: `next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        maxAge: 900,
+        domain: '.earnbyapps.com'
+      }
+    },
+    state: {
+      name: `next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        maxAge: 900,
+        domain: '.earnbyapps.com'
+      }
+    }
+  } : undefined,
   callbacks: {
     async signIn({ user, account, profile }: { user: any; account: any; profile?: any }) {
       if (user && user.email && isDbConfigured) {
