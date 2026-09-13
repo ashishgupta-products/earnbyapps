@@ -101,7 +101,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { id: 'Partner Support', label: 'Partner Support', href: '/admin/support', icon: '💬' },
     { id: 'Manage Banners', label: 'Manage Banners', href: '/admin/banners', icon: '🖼️' },
     { id: 'Manage Blog', label: 'Manage Blog', href: '/admin/blog', icon: '📰' },
-    { id: 'Manage Referrals', label: 'Manage Referrals', href: '/admin/referrals', icon: '🔗' }
+    { id: 'Manage Referrals', label: 'Manage Referrals', href: '/admin/referrals', icon: '🔗' },
+    { id: 'Direct', label: 'Direct', href: '/admin/direct', icon: '⚡' }
   ];
 
   const activeItem = menuItems.find(item => {

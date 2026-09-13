@@ -99,7 +99,30 @@ VALUES
 ('rozdhan', 'Roz Dhan: News & Earn', 'Passive', 'Android', '₹25.00 / install', 25.00, 'Read news articles and check in daily on Roz Dhan.', 'Install the Roz Dhan app, log in, and browse trending articles for 3 days.', 'Passive,Daily Checkin,Simple', 'https://rozdhan.com', 'India', 'INR', '₹')
 ON CONFLICT (id) DO NOTHING;
 
--- 6. Performance Indexes for Low-Latency Querying
+-- 6. Create Independent Direct Apps Table
+CREATE TABLE IF NOT EXISTS independent (
+    id VARCHAR(255) PRIMARY KEY,
+    app_name VARCHAR(255) NOT NULL,
+    app_image TEXT,
+    description TEXT,
+    referral_code VARCHAR(255),
+    app_link TEXT NOT NULL,
+    reward_badge VARCHAR(255) DEFAULT 'Direct Reward',
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Seed Initial Independent Direct Apps
+INSERT INTO independent (id, app_name, app_image, description, referral_code, app_link, reward_badge, is_active)
+VALUES
+('indep-angelone', 'Angel One Demat & Trading', 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=160&auto=format&fit=crop&q=80', 'Complete paperless Aadhaar & PAN KYC verification. Instant demat account activation and direct cash reward credited to your bank.', 'ANGELDIRECT', 'https://angelone.in/referral?ref=ANGELDIRECT', '₹250 Direct Cash', true),
+('indep-groww', 'Groww: Stocks & Mutual Funds', 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=160&auto=format&fit=crop&q=80', 'Open a zero-maintenance Demat account on Groww. Complete KYC to receive instant cashback sent straight to your primary bank account.', 'GROWW2026', 'https://groww.in/open-demat-account?invite=GROWW2026', '₹150 Instant Credit', true),
+('indep-winzo', 'WinZO Games: Play & Win', 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=160&auto=format&fit=crop&q=80', 'Download verified Android APK and play casual games. Sign up with invite code for instant ₹50 wallet cash redeemable via UPI.', 'WINZO50', 'https://winzogames.com/install?ref=WINZO50', '₹50 Signup Bonus', true),
+('indep-swagbucks', 'Swagbucks India Surveys', 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&auto=format&fit=crop&q=80', 'Participate in everyday consumer opinion surveys. Zero waiting time—rewards are credited and transferred directly via PayPal or gift cards.', 'SWAG2026', 'https://www.swagbucks.com/register?r=SWAG2026', '₹100 Direct Voucher', true),
+('indep-navi', 'Navi: UPI, Loans & Digital Gold', 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=160&auto=format&fit=crop&q=80', 'Setup Navi UPI and make a minimum digital gold purchase of ₹10 to unlock a flat ₹100 direct cashback deposited into your UPI linked bank.', 'NAVI100', 'https://navi.com/referral?code=NAVI100', '₹100 Direct Cashback', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 7. Performance Indexes for Low-Latency Querying
 CREATE INDEX IF NOT EXISTS idx_users_email_lower ON users (LOWER(email));
 CREATE INDEX IF NOT EXISTS idx_users_created_at ON users (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users (role);
@@ -121,4 +144,7 @@ CREATE INDEX IF NOT EXISTS idx_campaigns_country ON campaigns (target_country);
 CREATE INDEX IF NOT EXISTS idx_campaigns_is_active ON campaigns (is_active);
 CREATE INDEX IF NOT EXISTS idx_campaigns_created_at ON campaigns (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_campaigns_category ON campaigns (category);
+
+CREATE INDEX IF NOT EXISTS idx_independent_created_at ON independent (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_independent_is_active ON independent (is_active);
 
