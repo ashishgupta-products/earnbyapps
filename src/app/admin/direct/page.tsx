@@ -68,19 +68,34 @@ export default function AdminDirectPage() {
   const [filterMode, setFilterMode] = useState<'all' | 'with-code' | 'recent'>('all');
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
 
-  // Load from localStorage for static persistence
+  // Load from API with localStorage fallback
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('eb_static_direct_tasks');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setTasks(parsed);
+    async function fetchDirectTasks() {
+      try {
+        const res = await fetch('/api/independent');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.apps) && data.apps.length > 0) {
+            setTasks(data.apps);
+            return;
+          }
         }
+      } catch (e) {
+        // silent fallback
       }
-    } catch (e) {
-      console.warn('Could not read static direct tasks from localStorage', e);
+      try {
+        const saved = localStorage.getItem('eb_static_direct_tasks');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setTasks(parsed);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read static direct tasks from localStorage', e);
+      }
     }
+    fetchDirectTasks();
   }, []);
 
   const showToast = (text: string, type: 'success' | 'info' = 'success') => {
@@ -136,6 +151,13 @@ export default function AdminDirectPage() {
     const updated = [newTask, ...tasks];
     saveTasks(updated);
 
+    // Also persist to independent API / database
+    fetch('/api/independent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newTask)
+    }).catch(console.warn);
+
     // Reset form
     setAppName('');
     setAppImage('');
@@ -190,9 +212,33 @@ export default function AdminDirectPage() {
       <section className="direct-hero-card">
         <div className="hero-glow-blob" />
         <div className="hero-content">
-          <div className="hero-badge-pill">
-            <span className="pulse-dot" />
-            <span className="hero-badge-text">⚡ DIRECT APPS & INSTANT REWARDS</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            <div className="hero-badge-pill">
+              <span className="pulse-dot" />
+              <span className="hero-badge-text">⚡ DIRECT APPS & INSTANT REWARDS</span>
+            </div>
+            <a
+              href="/instantpayot"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(79, 70, 229, 0.12)',
+                border: '1px solid rgba(79, 70, 229, 0.3)',
+                color: 'var(--accent-indigo, #4f46e5)',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+                textDecoration: 'none',
+                transition: 'all 0.2s'
+              }}
+            >
+              <span>🌐 Open User View (/instantpayot)</span>
+              <span>↗</span>
+            </a>
           </div>
           
           <h1 className="hero-title">
