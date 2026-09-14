@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS independent (
     referral_code VARCHAR(255),
     app_link TEXT NOT NULL,
     reward_badge VARCHAR(255) DEFAULT 'Direct Reward',
+    category VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

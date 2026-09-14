@@ -14,56 +14,83 @@ interface DirectTask {
   rewardBadge?: string;
 }
 
+const CATEGORY_OPTIONS = [
+  'Finance & Demat',
+  'Casual Gaming',
+  'Surveys & Tasks',
+  'UPI & Banking',
+  'Crypto & Trading',
+  'Shopping & Cashbacks',
+  'Other'
+];
+
 const INITIAL_TASKS: DirectTask[] = [
   {
-    id: 'dt-1',
+    id: 'indep-angelone',
     appName: 'Angel One Demat & Trading',
     appImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=160&auto=format&fit=crop&q=80',
     description: 'Complete online paperless Aadhaar & PAN KYC verification to open a Demat account and receive instant rewards credited directly to you.',
     referralCode: 'ANGELDIRECT',
     appLink: 'https://angelone.in/referral?ref=ANGELDIRECT',
     createdAt: '2026-09-12',
-    category: 'Finance & Trading',
+    category: 'Finance & Demat',
     rewardBadge: '₹250 Direct Cash'
   },
   {
-    id: 'dt-2',
-    appName: 'Swagbucks India Surveys',
-    appImage: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&auto=format&fit=crop&q=80',
-    description: 'Share feedback on everyday consumer brands. Zero waiting signup with this code and earn direct wallet credits instantly.',
-    referralCode: 'SWAG2026',
-    appLink: 'https://www.swagbucks.com/register?r=SWAG2026',
+    id: 'indep-groww',
+    appName: 'Groww: Stocks & Mutual Funds',
+    appImage: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=160&auto=format&fit=crop&q=80',
+    description: 'Open a zero-maintenance Demat account on Groww. Complete KYC to receive instant cashback sent straight to your primary bank account.',
+    referralCode: 'GROWW2026',
+    appLink: 'https://groww.in/open-demat-account?invite=GROWW2026',
     createdAt: '2026-09-11',
-    category: 'Opinion Surveys',
+    category: 'Finance & Demat',
     rewardBadge: '₹150 Instant Credit'
   },
   {
-    id: 'dt-3',
+    id: 'indep-winzo',
     appName: 'WinZO Super Gaming Pass',
     appImage: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=160&auto=format&fit=crop&q=80',
     description: 'Play casual skill-based mobile games. Sign up with promo code for instant ₹50 initial wallet balance credited on first round.',
     referralCode: 'WINZO50',
     appLink: 'https://winzo.com/direct-join?code=WINZO50',
     createdAt: '2026-09-10',
-    category: 'Mobile Gaming',
+    category: 'Casual Gaming',
     rewardBadge: '₹50 Signup Bonus'
   }
 ];
 
 export default function AdminDirectPage() {
   const [tasks, setTasks] = useState<DirectTask[]>(INITIAL_TASKS);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Form states
+  // Form creation states
   const [appName, setAppName] = useState('');
   const [appImage, setAppImage] = useState('');
   const [description, setDescription] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [appLink, setAppLink] = useState('');
   const [rewardBadge, setRewardBadge] = useState('');
+  const [category, setCategory] = useState('Finance & Demat');
+  const [isSubmittingCreate, setIsSubmittingCreate] = useState(false);
+
+  // Edit modal states
+  const [editingTask, setEditingTask] = useState<DirectTask | null>(null);
+  const [editAppName, setEditAppName] = useState('');
+  const [editAppImage, setEditAppImage] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editReferralCode, setEditReferralCode] = useState('');
+  const [editAppLink, setEditAppLink] = useState('');
+  const [editRewardBadge, setEditRewardBadge] = useState('');
+  const [editCategory, setEditCategory] = useState('Finance & Demat');
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+  // Deletion tracking state
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
 
   // UI interaction states
   const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' } | null>(null);
+  const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'with-code' | 'recent'>('all');
   const [isFormCollapsed, setIsFormCollapsed] = useState(false);
@@ -71,18 +98,26 @@ export default function AdminDirectPage() {
   // Load from API with localStorage fallback
   useEffect(() => {
     async function fetchDirectTasks() {
+      setIsLoading(true);
       try {
         const res = await fetch('/api/independent');
         if (res.ok) {
           const data = await res.json();
-          if (data.success && Array.isArray(data.apps) && data.apps.length > 0) {
+          if (data.success && Array.isArray(data.apps)) {
             setTasks(data.apps);
+            try {
+              localStorage.setItem('eb_static_direct_tasks', JSON.stringify(data.apps));
+            } catch (e) {
+              // Ignore storage errors
+            }
+            setIsLoading(false);
             return;
           }
         }
       } catch (e) {
-        // silent fallback
+        // Fallback to local storage if API is temporarily unreachable
       }
+
       try {
         const saved = localStorage.getItem('eb_static_direct_tasks');
         if (saved) {
@@ -93,14 +128,17 @@ export default function AdminDirectPage() {
         }
       } catch (e) {
         console.warn('Could not read static direct tasks from localStorage', e);
+      } finally {
+        setIsLoading(false);
       }
     }
+
     fetchDirectTasks();
   }, []);
 
-  const showToast = (text: string, type: 'success' | 'info' = 'success') => {
+  const showToast = (text: string, type: 'success' | 'info' | 'error' = 'success') => {
     setToastMessage({ text, type });
-    setTimeout(() => setToastMessage(null), 3200);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const saveTasks = (newTasks: DirectTask[]) => {
@@ -129,7 +167,24 @@ export default function AdminDirectPage() {
     }
   };
 
-  const handleCreateTask = (e: React.FormEvent) => {
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size exceeds 2MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setEditAppImage(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!appName.trim() || !appLink.trim()) {
@@ -137,43 +192,149 @@ export default function AdminDirectPage() {
       return;
     }
 
+    setIsSubmittingCreate(true);
+
+    const generatedId = `indep-${Date.now()}`;
     const newTask: DirectTask = {
-      id: `task-${Date.now()}`,
+      id: generatedId,
       appName: appName.trim(),
       appImage: appImage.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=160&auto=format&fit=crop&q=80',
       description: description.trim(),
       referralCode: referralCode.trim(),
       appLink: appLink.trim().startsWith('http') ? appLink.trim() : `https://${appLink.trim()}`,
       rewardBadge: rewardBadge.trim() || 'Direct Reward',
+      category: category || 'Finance & Demat',
       createdAt: new Date().toISOString().split('T')[0]
     };
 
-    const updated = [newTask, ...tasks];
-    saveTasks(updated);
+    try {
+      const res = await fetch('/api/independent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask)
+      });
 
-    // Also persist to independent API / database
-    fetch('/api/independent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask)
-    }).catch(console.warn);
-
-    // Reset form
-    setAppName('');
-    setAppImage('');
-    setDescription('');
-    setReferralCode('');
-    setAppLink('');
-    setRewardBadge('');
-
-    showToast(`"${newTask.appName}" published to Direct tasks below!`);
+      const data = await res.json();
+      if (res.ok && data.success && data.app) {
+        const finalTask: DirectTask = { ...newTask, id: data.app.id };
+        const updated = [finalTask, ...tasks.filter(t => t.id !== finalTask.id)];
+        saveTasks(updated);
+        showToast(`"${finalTask.appName}" published to Direct tasks below!`, 'success');
+      } else {
+        const updated = [newTask, ...tasks];
+        saveTasks(updated);
+        showToast(`"${newTask.appName}" saved locally.`, 'info');
+      }
+    } catch (err) {
+      const updated = [newTask, ...tasks];
+      saveTasks(updated);
+      showToast(`"${newTask.appName}" saved locally.`, 'info');
+    } finally {
+      setIsSubmittingCreate(false);
+      // Reset form
+      setAppName('');
+      setAppImage('');
+      setDescription('');
+      setReferralCode('');
+      setAppLink('');
+      setRewardBadge('');
+      setCategory('Finance & Demat');
+    }
   };
 
-  const handleDeleteTask = (id: string, name: string) => {
-    if (confirm(`Remove "${name}" from Direct tasks?`)) {
-      const updated = tasks.filter(t => t.id !== id);
+  // Open Edit Modal
+  const handleOpenEditModal = (task: DirectTask) => {
+    setEditingTask(task);
+    setEditAppName(task.appName || '');
+    setEditAppImage(task.appImage || '');
+    setEditDescription(task.description || '');
+    setEditReferralCode(task.referralCode || '');
+    setEditAppLink(task.appLink || '');
+    setEditRewardBadge(task.rewardBadge || '');
+    setEditCategory(task.category || 'Finance & Demat');
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingTask(null);
+  };
+
+  // Save Edit Changes
+  const handleUpdateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTask) return;
+
+    if (!editAppName.trim() || !editAppLink.trim()) {
+      alert('Please fill in both the App Name and the App Link.');
+      return;
+    }
+
+    setIsSubmittingEdit(true);
+
+    const updatedTask: DirectTask = {
+      id: editingTask.id,
+      appName: editAppName.trim(),
+      appImage: editAppImage.trim() || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=160&auto=format&fit=crop&q=80',
+      description: editDescription.trim(),
+      referralCode: editReferralCode.trim(),
+      appLink: editAppLink.trim().startsWith('http') ? editAppLink.trim() : `https://${editAppLink.trim()}`,
+      rewardBadge: editRewardBadge.trim() || 'Direct Reward',
+      category: editCategory || 'Finance & Demat',
+      createdAt: editingTask.createdAt || new Date().toISOString().split('T')[0]
+    };
+
+    try {
+      const res = await fetch('/api/independent', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTask)
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || 'Failed to update task on server.', 'error');
+        setIsSubmittingEdit(false);
+        return;
+      }
+
+      const updated = tasks.map(t => t.id === editingTask.id ? updatedTask : t);
       saveTasks(updated);
-      showToast(`Removed "${name}"`, 'info');
+      setEditingTask(null);
+      showToast(`"${updatedTask.appName}" updated successfully!`, 'success');
+    } catch (err: any) {
+      showToast('Network error while updating: ' + (err.message || 'Please try again.'), 'error');
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
+  // Permanent Delete Handler
+  const handleDeleteTask = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to permanently delete "${name}"?\n\nThis will remove it from the Direct tasks page and database.`)) {
+      return;
+    }
+
+    const previousTasks = [...tasks];
+    const updated = tasks.filter(t => t.id !== id);
+    saveTasks(updated);
+    setDeletingTaskId(id);
+
+    try {
+      const res = await fetch(`/api/independent?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`"${name}" was permanently removed!`, 'info');
+      } else {
+        saveTasks(previousTasks);
+        showToast(data.error || `Failed to delete "${name}". Reverted changes.`, 'error');
+      }
+    } catch (err) {
+      saveTasks(previousTasks);
+      showToast(`Network error while deleting "${name}". Reverted.`, 'error');
+    } finally {
+      setDeletingTaskId(null);
     }
   };
 
@@ -181,7 +342,7 @@ export default function AdminDirectPage() {
     if (!code) return;
     navigator.clipboard.writeText(code);
     setCopiedCodeId(id);
-    showToast(`Referral code "${code}" copied to clipboard!`);
+    showToast(`Referral code "${code}" copied to clipboard!`, 'info');
     setTimeout(() => setCopiedCodeId(null), 2500);
   };
 
@@ -190,7 +351,8 @@ export default function AdminDirectPage() {
     const matchesSearch = 
       t.appName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.referralCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchTerm.toLowerCase());
+      t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t.category && t.category.toLowerCase().includes(searchTerm.toLowerCase()));
     
     if (!matchesSearch) return false;
     if (filterMode === 'with-code') return Boolean(t.referralCode);
@@ -203,7 +365,9 @@ export default function AdminDirectPage() {
       {/* Floating Toast Alert */}
       {toastMessage && (
         <div className={`direct-floating-toast ${toastMessage.type}`}>
-          <span className="toast-icon">{toastMessage.type === 'success' ? '✓' : 'ℹ'}</span>
+          <span className="toast-icon">
+            {toastMessage.type === 'success' ? '✓' : toastMessage.type === 'error' ? '✕' : 'ℹ'}
+          </span>
           <span>{toastMessage.text}</span>
         </div>
       )}
@@ -215,26 +379,13 @@ export default function AdminDirectPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <div className="hero-badge-pill">
               <span className="pulse-dot" />
-              <span className="hero-badge-text">⚡ DIRECT APPS & INSTANT REWARDS</span>
+              <span className="hero-badge-text">⚡ DIRECT APPS &amp; INSTANT REWARDS</span>
             </div>
             <a
               href="/instantpayot"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: 'rgba(79, 70, 229, 0.12)',
-                border: '1px solid rgba(79, 70, 229, 0.3)',
-                color: 'var(--accent-indigo, #4f46e5)',
-                padding: '4px 12px',
-                borderRadius: '999px',
-                fontSize: '0.76rem',
-                fontWeight: 700,
-                textDecoration: 'none',
-                transition: 'all 0.2s'
-              }}
+              className="user-view-link"
             >
               <span>🌐 Open User View (/instantpayot)</span>
               <span>↗</span>
@@ -245,13 +396,12 @@ export default function AdminDirectPage() {
             Direct Deals <span className="gradient-text">&amp; Instant Offers</span>
           </h1>
 
-          {/* User's exact requested line in a glowing callout */}
           <div className="hero-quote-box">
             <div className="quote-accent-bar" />
             <div className="quote-text-wrap">
               <span className="quote-icon">🎁</span>
               <p className="hero-quote-text">
-                Instant page contain apps that pay directly to their users , direct reward zero waiting signup with these codes and the apps will send your rewards directly to you
+                Instant page contains apps that pay directly to their users. Direct reward, zero waiting signup with these codes and the apps will send your rewards directly to you.
               </p>
             </div>
           </div>
@@ -301,7 +451,6 @@ export default function AdminDirectPage() {
           {!isFormCollapsed && (
             <form onSubmit={handleCreateTask} className="direct-form">
               <div className="form-row-2col">
-                
                 {/* Field 1: App Name */}
                 <div className="input-group">
                   <label className="input-label">
@@ -335,18 +484,18 @@ export default function AdminDirectPage() {
                 </div>
               </div>
 
-              <div className="form-row-2col">
+              <div className="form-row-3col">
                 {/* Field 3: Referral Code */}
                 <div className="input-group">
                   <label className="input-label">
                     <span>🏷️ Referral Code</span>
-                    <span className="hint-label">(Applies at signup)</span>
+                    <span className="hint-label">(Optional)</span>
                   </label>
                   <input
                     type="text"
                     value={referralCode}
                     onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. BONUS2026, DIRECT100"
+                    placeholder="e.g. BONUS2026"
                     className="styled-input uppercase-code"
                   />
                 </div>
@@ -361,13 +510,29 @@ export default function AdminDirectPage() {
                     type="text"
                     value={rewardBadge}
                     onChange={(e) => setRewardBadge(e.target.value)}
-                    placeholder="e.g. ₹200 Direct Cash, Instant Bonus"
+                    placeholder="e.g. ₹200 Direct Cash"
                     className="styled-input"
                   />
                 </div>
+
+                {/* Field 5: Category */}
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>📂 Category</span>
+                  </label>
+                  <select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="styled-input styled-select"
+                  >
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {/* Field 5: App Image (URL or Browse) */}
+              {/* Field 6: App Image (URL or Browse) */}
               <div className="input-group">
                 <label className="input-label">
                   <span>🖼️ App Icon / Thumbnail Image</span>
@@ -393,7 +558,7 @@ export default function AdminDirectPage() {
                 </div>
               </div>
 
-              {/* Field 6: Description */}
+              {/* Field 7: Description */}
               <div className="input-group">
                 <label className="input-label">
                   <span>📝 Offer Description</span>
@@ -410,9 +575,22 @@ export default function AdminDirectPage() {
 
               {/* Form Action Controls */}
               <div className="form-actions-row">
-                <button type="submit" className="submit-task-btn">
-                  <span>⚡</span>
-                  <span>Create Direct Task</span>
+                <button
+                  type="submit"
+                  disabled={isSubmittingCreate}
+                  className="submit-task-btn"
+                >
+                  {isSubmittingCreate ? (
+                    <>
+                      <span className="spinner-dot" />
+                      <span>Publishing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>⚡</span>
+                      <span>Create Direct Task</span>
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -423,6 +601,7 @@ export default function AdminDirectPage() {
                     setReferralCode('');
                     setAppLink('');
                     setRewardBadge('');
+                    setCategory('Finance & Demat');
                   }}
                   className="clear-form-btn"
                 >
@@ -460,6 +639,7 @@ export default function AdminDirectPage() {
                       {rewardBadge || 'Direct Reward'}
                     </span>
                     <span className="instant-badge">⚡ Instant</span>
+                    <span className="category-pill-tag">📂 {category}</span>
                   </div>
                   <h3 className="task-app-title">
                     {appName || 'Sample App Name'}
@@ -505,7 +685,7 @@ export default function AdminDirectPage() {
               <span className="tasks-count-pill">{filteredTasks.length} Offers</span>
             </div>
             <p className="section-subheading">
-              Apps listed below are currently available in the Direct module.
+              Apps listed below are currently available in the Direct module and /instantpayot.
             </p>
           </div>
 
@@ -550,8 +730,14 @@ export default function AdminDirectPage() {
           </div>
         </div>
 
-        {/* Empty State */}
-        {filteredTasks.length === 0 ? (
+        {/* Loading / Empty States */}
+        {isLoading ? (
+          <div className="empty-tasks-card">
+            <div className="spinner-dot large" />
+            <h3 className="empty-title">Loading Direct Tasks...</h3>
+            <p className="empty-desc">Fetching live offers from database...</p>
+          </div>
+        ) : filteredTasks.length === 0 ? (
           <div className="empty-tasks-card">
             <div className="empty-icon-circle">⚡</div>
             <h3 className="empty-title">No Direct Tasks Found</h3>
@@ -591,6 +777,9 @@ export default function AdminDirectPage() {
                         {task.rewardBadge || 'Direct Reward'}
                       </span>
                       <span className="instant-badge">⚡ Instant</span>
+                      {task.category && (
+                        <span className="category-pill-tag">📂 {task.category}</span>
+                      )}
                       {task.createdAt && (
                         <span className="date-tag">{task.createdAt}</span>
                       )}
@@ -621,11 +810,11 @@ export default function AdminDirectPage() {
                   </div>
                 ) : (
                   <div className="task-code-box no-code">
-                    <span className="no-code-text">✨ No referral code needed — Direct link reward</span>
+                    <span className="no-code-text">✨ Direct link reward — No promo code needed</span>
                   </div>
                 )}
 
-                {/* Card Bottom CTA Actions */}
+                {/* Card Bottom CTA Actions with Edit & Delete */}
                 <div className="task-actions-footer">
                   <a
                     href={task.appLink}
@@ -639,11 +828,22 @@ export default function AdminDirectPage() {
 
                   <button
                     type="button"
-                    onClick={() => handleDeleteTask(task.id, task.appName)}
-                    className="delete-task-btn"
-                    title="Remove Task"
+                    onClick={() => handleOpenEditModal(task)}
+                    className="edit-task-btn"
+                    title={`Edit details for ${task.appName}`}
                   >
-                    🗑️
+                    <span>✏️</span>
+                    <span>Edit</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteTask(task.id, task.appName)}
+                    disabled={deletingTaskId === task.id}
+                    className={`delete-task-btn ${deletingTaskId === task.id ? 'is-deleting' : ''}`}
+                    title={`Permanently delete ${task.appName}`}
+                  >
+                    {deletingTaskId === task.id ? '⏳' : '🗑️'}
                   </button>
                 </div>
               </div>
@@ -652,7 +852,187 @@ export default function AdminDirectPage() {
         )}
       </section>
 
-      {/* Scoped CSS styling for ultra-rich visuals */}
+      {/* 4. Edit Direct Task Modal */}
+      {editingTask && (
+        <div className="direct-modal-backdrop" onClick={handleCloseEditModal}>
+          <div className="direct-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-header-left">
+                <div className="modal-badge-circle">✏️</div>
+                <div>
+                  <h3 className="modal-title">Edit Direct Offer</h3>
+                  <p className="modal-subtitle">Update app links, promo codes, reward badges &amp; categories</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="modal-close-btn"
+                onClick={handleCloseEditModal}
+                title="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateTask} className="modal-form">
+              <div className="form-row-2col">
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>📱 App Name</span>
+                    <span className="required-star">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editAppName}
+                    onChange={(e) => setEditAppName(e.target.value)}
+                    required
+                    className="styled-input"
+                    placeholder="e.g. Angel One, Groww"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>🔗 App Direct Link</span>
+                    <span className="required-star">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={editAppLink}
+                    onChange={(e) => setEditAppLink(e.target.value)}
+                    required
+                    className="styled-input"
+                    placeholder="https://app.link/..."
+                  />
+                </div>
+              </div>
+
+              <div className="form-row-3col">
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>🏷️ Referral Code</span>
+                    <span className="hint-label">(Optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editReferralCode}
+                    onChange={(e) => setEditReferralCode(e.target.value.toUpperCase())}
+                    className="styled-input uppercase-code"
+                    placeholder="e.g. BONUS2026"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>💰 Reward Highlight</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editRewardBadge}
+                    onChange={(e) => setEditRewardBadge(e.target.value)}
+                    className="styled-input"
+                    placeholder="e.g. ₹200 Direct Cash"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">
+                    <span>📂 Category</span>
+                  </label>
+                  <select
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="styled-input styled-select"
+                  >
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">
+                  <span>🖼️ App Icon / Thumbnail Image</span>
+                  <span className="hint-label">(URL or Upload image)</span>
+                </label>
+                <div className="image-input-split">
+                  <div className="modal-avatar-preview">
+                    <img
+                      src={editAppImage || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=160&auto=format&fit=crop&q=80'}
+                      alt="Thumbnail Preview"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/120x120/4f46e5/ffffff?text=App';
+                      }}
+                      className="modal-avatar-img"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={editAppImage}
+                    onChange={(e) => setEditAppImage(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                    className="styled-input image-url-input"
+                  />
+                  <label className="file-upload-btn">
+                    <span>📁 Browse</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditImageUpload}
+                      className="hidden-file-input"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label className="input-label">
+                  <span>📝 Offer Description</span>
+                  <span className="hint-label">(How users earn reward)</span>
+                </label>
+                <textarea
+                  rows={3}
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="e.g. Complete online KYC and claim instant bonus credited to your bank."
+                  className="styled-textarea"
+                />
+              </div>
+
+              <div className="modal-actions-row">
+                <button
+                  type="button"
+                  onClick={handleCloseEditModal}
+                  className="modal-cancel-btn"
+                  disabled={isSubmittingEdit}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="modal-save-btn"
+                  disabled={isSubmittingEdit}
+                >
+                  {isSubmittingEdit ? (
+                    <>
+                      <span className="spinner-dot" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>💾</span>
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Scoped CSS styling */}
       <style>{`
         .admin-direct-root {
           display: flex;
@@ -669,7 +1049,7 @@ export default function AdminDirectPage() {
           position: fixed;
           top: 24px;
           right: 24px;
-          z-index: 9999;
+          z-index: 99999;
           display: flex;
           align-items: center;
           gap: 10px;
@@ -687,6 +1067,10 @@ export default function AdminDirectPage() {
         }
         .direct-floating-toast.info {
           background: linear-gradient(135deg, #4f46e5, #3b82f6);
+          border: 1px solid rgba(255,255,255,0.2);
+        }
+        .direct-floating-toast.error {
+          background: linear-gradient(135deg, #ef4444, #b91c1c);
           border: 1px solid rgba(255,255,255,0.2);
         }
         .toast-icon {
@@ -757,6 +1141,24 @@ export default function AdminDirectPage() {
           font-weight: 700;
           letter-spacing: 0.06em;
           color: var(--accent-indigo, #4f46e5);
+        }
+        .user-view-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(79, 70, 229, 0.12);
+          border: 1px solid rgba(79, 70, 229, 0.3);
+          color: var(--accent-indigo, #4f46e5);
+          padding: 4px 12px;
+          border-radius: 999px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .user-view-link:hover {
+          background: var(--accent-indigo, #4f46e5);
+          color: #ffffff;
         }
         .hero-title {
           font-family: var(--font-display);
@@ -913,6 +1315,11 @@ export default function AdminDirectPage() {
           grid-template-columns: 1fr 1fr;
           gap: 18px;
         }
+        .form-row-3col {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 16px;
+        }
         .input-group {
           display: flex;
           flex-direction: column;
@@ -951,6 +1358,10 @@ export default function AdminDirectPage() {
           border-color: var(--accent-indigo, #4f46e5);
           box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
           background: rgba(79, 70, 229, 0.02);
+        }
+        .styled-select {
+          cursor: pointer;
+          background: var(--bg-card);
         }
         .uppercase-code {
           font-family: monospace;
@@ -1032,12 +1443,13 @@ export default function AdminDirectPage() {
           box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
           transition: all 0.25s ease;
         }
-        .submit-task-btn:hover {
+        .submit-task-btn:hover:not(:disabled) {
           transform: translateY(-1px);
           box-shadow: 0 6px 22px rgba(79, 70, 229, 0.45);
         }
-        .submit-task-btn:active {
-          transform: translateY(0);
+        .submit-task-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
         }
         .clear-form-btn {
           background: transparent;
@@ -1288,6 +1700,15 @@ export default function AdminDirectPage() {
           color: var(--accent-indigo, #4f46e5);
           border: 1px solid rgba(79, 70, 229, 0.2);
         }
+        .category-pill-tag {
+          font-size: 0.7rem;
+          font-weight: 600;
+          padding: 2px 7px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-secondary);
+          border: 1px solid var(--border-color);
+        }
         .date-tag {
           font-size: 0.72rem;
           color: var(--text-muted);
@@ -1388,7 +1809,7 @@ export default function AdminDirectPage() {
         .task-actions-footer {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           margin-top: auto;
           padding-top: 4px;
         }
@@ -1401,12 +1822,16 @@ export default function AdminDirectPage() {
           background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(6, 182, 212, 0.12));
           color: var(--accent-indigo, #4f46e5);
           border: 1px solid rgba(79, 70, 229, 0.25);
-          padding: 9px 16px;
+          padding: 9px 14px;
           border-radius: 9px;
-          font-size: 0.86rem;
+          font-size: 0.84rem;
           font-weight: 600;
           text-decoration: none;
           transition: all 0.2s ease;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .visit-link-btn:hover {
           background: linear-gradient(135deg, #4f46e5, #06b6d4);
@@ -1420,6 +1845,52 @@ export default function AdminDirectPage() {
         }
         .visit-link-btn:hover .arrow-icon {
           transform: translate(2px, -2px);
+        }
+
+        .edit-task-btn {
+          background: rgba(79, 70, 229, 0.08);
+          border: 1px solid rgba(79, 70, 229, 0.25);
+          color: var(--accent-indigo, #4f46e5);
+          padding: 9px 13px;
+          border-radius: 9px;
+          font-size: 0.84rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          white-space: nowrap;
+        }
+        .edit-task-btn:hover {
+          background: var(--accent-indigo, #4f46e5);
+          color: #ffffff;
+          border-color: var(--accent-indigo, #4f46e5);
+          box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .delete-task-btn {
+          background: rgba(239, 68, 68, 0.08);
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+          padding: 9px 12px;
+          border-radius: 9px;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .delete-task-btn:hover:not(:disabled) {
+          background: #ef4444;
+          color: #ffffff;
+          border-color: #ef4444;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+        .delete-task-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
         }
 
         .mock-open-btn {
@@ -1436,26 +1907,6 @@ export default function AdminDirectPage() {
           font-size: 0.86rem;
           font-weight: 600;
           pointer-events: none;
-        }
-
-        .delete-task-btn {
-          background: rgba(239, 68, 68, 0.08);
-          border: 1px solid rgba(239, 68, 68, 0.2);
-          color: #ef4444;
-          padding: 9px 13px;
-          border-radius: 9px;
-          font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .delete-task-btn:hover {
-          background: #ef4444;
-          color: #ffffff;
-          border-color: #ef4444;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
 
         /* Empty state */
@@ -1506,6 +1957,186 @@ export default function AdminDirectPage() {
           cursor: pointer;
         }
 
+        /* 4. Edit Modal Backdrop & Box */
+        .direct-modal-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          z-index: 100000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: fadeInModal 0.2s ease-out;
+        }
+        @keyframes fadeInModal {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .direct-modal-box {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          width: 100%;
+          max-width: 680px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+          padding: 28px;
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          max-height: 90vh;
+          overflow-y: auto;
+          animation: scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes scaleUpModal {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 16px;
+        }
+        .modal-header-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .modal-badge-circle {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: rgba(79, 70, 229, 0.12);
+          border: 1px solid rgba(79, 70, 229, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+        }
+        .modal-title {
+          font-family: var(--font-display);
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: var(--text-primary);
+          margin: 0 0 3px;
+        }
+        .modal-subtitle {
+          margin: 0;
+          font-size: 0.82rem;
+          color: var(--text-secondary);
+        }
+        .modal-close-btn {
+          background: transparent;
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          width: 34px;
+          height: 34px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .modal-close-btn:hover {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border-color: rgba(239, 68, 68, 0.3);
+        }
+        .modal-form {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .modal-avatar-preview {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          overflow: hidden;
+          flex-shrink: 0;
+          border: 1px solid var(--border-color);
+          background: rgba(255,255,255,0.05);
+        }
+        .modal-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .modal-actions-row {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 8px;
+          border-top: 1px solid var(--border-color);
+          padding-top: 18px;
+        }
+        .modal-cancel-btn {
+          background: transparent;
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          padding: 10px 20px;
+          border-radius: 9px;
+          font-size: 0.88rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .modal-cancel-btn:hover {
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-primary);
+        }
+        .modal-save-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+          color: #ffffff;
+          border: none;
+          padding: 10px 24px;
+          border-radius: 9px;
+          font-size: 0.9rem;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+          transition: all 0.2s;
+        }
+        .modal-save-btn:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
+        }
+        .modal-save-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+
+        .spinner-dot {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(255,255,255,0.3);
+          border-top-color: #ffffff;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+        .spinner-dot.large {
+          width: 32px;
+          height: 32px;
+          border-width: 3px;
+          border-top-color: var(--accent-indigo, #4f46e5);
+          border-color: rgba(79, 70, 229, 0.2);
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
         /* Responsive */
         @media (max-width: 1024px) {
           .direct-hero-card {
@@ -1532,7 +2163,7 @@ export default function AdminDirectPage() {
           .hero-stats-panel {
             flex-direction: column;
           }
-          .form-row-2col {
+          .form-row-2col, .form-row-3col {
             grid-template-columns: 1fr;
           }
           .tasks-grid {
@@ -1547,6 +2178,13 @@ export default function AdminDirectPage() {
           }
           .search-input-wrap {
             width: 100%;
+          }
+          .task-actions-footer {
+            flex-wrap: wrap;
+          }
+          .visit-link-btn {
+            width: 100%;
+            flex: none;
           }
         }
       `}</style>

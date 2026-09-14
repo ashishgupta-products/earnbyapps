@@ -42,10 +42,12 @@ async function run() {
       referral_code VARCHAR(255),
       app_link TEXT NOT NULL,
       reward_badge VARCHAR(255) DEFAULT 'Direct Reward',
+      category VARCHAR(255),
       is_active BOOLEAN DEFAULT TRUE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
+  await sql`ALTER TABLE independent ADD COLUMN IF NOT EXISTS category VARCHAR(255);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_independent_created_at ON independent (created_at DESC);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_independent_is_active ON independent (is_active);`;
   console.log("✓ Table 'independent' created successfully with indexes!");

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql, isDbConfigured } from '../../../lib/db';
 
-const FALLBACK_INDEPENDENT_APPS = [
+const INITIAL_FALLBACK_APPS = [
   {
     id: 'indep-angelone',
     appName: 'Angel One Demat & Trading',
@@ -10,7 +10,7 @@ const FALLBACK_INDEPENDENT_APPS = [
     referralCode: 'ANGELDIRECT',
     appLink: 'https://angelone.in/referral?ref=ANGELDIRECT',
     rewardBadge: '₹250 Direct Cash',
-    category: 'Finance & Trading',
+    category: 'Finance & Demat',
     isActive: true,
     createdAt: '2026-09-12'
   },
@@ -22,7 +22,7 @@ const FALLBACK_INDEPENDENT_APPS = [
     referralCode: 'GROWW2026',
     appLink: 'https://groww.in/open-demat-account?invite=GROWW2026',
     rewardBadge: '₹150 Instant Credit',
-    category: 'Finance & Trading',
+    category: 'Finance & Demat',
     isActive: true,
     createdAt: '2026-09-11'
   },
@@ -46,7 +46,7 @@ const FALLBACK_INDEPENDENT_APPS = [
     referralCode: 'SWAG2026',
     appLink: 'https://www.swagbucks.com/register?r=SWAG2026',
     rewardBadge: '₹100 Direct Voucher',
-    category: 'Opinion Surveys',
+    category: 'Surveys & Tasks',
     isActive: true,
     createdAt: '2026-09-09'
   },
@@ -64,6 +64,8 @@ const FALLBACK_INDEPENDENT_APPS = [
   }
 ];
 
+let fallbackApps = [...INITIAL_FALLBACK_APPS];
+
 export async function GET() {
   try {
     if (isDbConfigured) {
@@ -76,6 +78,7 @@ export async function GET() {
           referral_code as "referralCode", 
           app_link as "appLink", 
           reward_badge as "rewardBadge", 
+          COALESCE(category, 'Finance & Demat') as "category",
           is_active as "isActive", 
           to_char(created_at, 'YYYY-MM-DD') as "createdAt"
         FROM independent 
@@ -83,35 +86,115 @@ export async function GET() {
         ORDER BY created_at DESC;
       `;
 
-      if (rows && rows.length > 0) {
+      if (Array.isArray(rows)) {
         return NextResponse.json({ success: true, apps: rows });
       }
     }
 
-    return NextResponse.json({ success: true, apps: FALLBACK_INDEPENDENT_APPS });
+    return NextResponse.json({ success: true, apps: fallbackApps });
   } catch (error: any) {
     console.error('Error fetching independent apps:', error);
-    return NextResponse.json({ success: true, apps: FALLBACK_INDEPENDENT_APPS });
+    return NextResponse.json({ success: true, apps: fallbackApps });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { appName, appImage, description, referralCode, appLink, rewardBadge } = body;
+    const { id: clientProvidedId, appName, appImage, description, referralCode, appLink, rewardBadge, category } = body;
 
     if (!appName || !appLink) {
       return NextResponse.json({ success: false, error: 'App name and app link are required.' }, { status: 400 });
     }
 
-    const id = `indep-${Date.now()}`;
+    const id = clientProvidedId || `indep-${Date.now()}`;
     const badge = rewardBadge || 'Direct Reward';
+    const cat = category || 'Finance & Demat';
+    const createdAt = new Date().toISOString().split('T')[0];
 
     if (isDbConfigured) {
       await sql`
-        INSERT INTO independent (id, app_name, app_image, description, referral_code, app_link, reward_badge, is_active)
-        VALUES (${id}, ${appName}, ${appImage || ''}, ${description || ''}, ${referralCode || ''}, ${appLink}, ${badge}, true);
+        INSERT INTO independent (id, app_name, app_image, description, referral_code, app_link, reward_badge, category, is_active)
+        VALUES (${id}, ${appName}, ${appImage || ''}, ${description || ''}, ${referralCode || ''}, ${appLink}, ${badge}, ${cat}, true)
+        ON CONFLICT (id) DO UPDATE SET
+          app_name = EXCLUDED.app_name,
+          app_image = EXCLUDED.app_image,
+          description = EXCLUDED.description,
+          referral_code = EXCLUDED.referral_code,
+          app_link = EXCLUDED.app_link,
+          reward_badge = EXCLUDED.reward_badge,
+          category = EXCLUDED.category,
+          is_active = EXCLUDED.is_active;
       `;
+    }
+
+    const newApp = {
+      id,
+      appName,
+      appImage: appImage || '',
+      description: description || '',
+      referralCode: referralCode || '',
+      appLink,
+      rewardBadge: badge,
+      category: cat,
+      isActive: true,
+      createdAt
+    };
+
+    fallbackApps = [newApp, ...fallbackApps.filter(a => a.id !== id)];
+
+    return NextResponse.json({
+      success: true,
+      app: newApp
+    });
+  } catch (error: any) {
+    console.error('Error creating independent app:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, appName, appImage, description, referralCode, appLink, rewardBadge, category } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Task ID is required for editing.' }, { status: 400 });
+    }
+    if (!appName || !appLink) {
+      return NextResponse.json({ success: false, error: 'App name and app link are required.' }, { status: 400 });
+    }
+
+    const badge = rewardBadge || 'Direct Reward';
+    const cat = category || 'Finance & Demat';
+
+    if (isDbConfigured) {
+      await sql`
+        UPDATE independent
+        SET 
+          app_name = ${appName},
+          app_image = ${appImage || ''},
+          description = ${description || ''},
+          referral_code = ${referralCode || ''},
+          app_link = ${appLink},
+          reward_badge = ${badge},
+          category = ${cat}
+        WHERE id = ${id};
+      `;
+    }
+
+    const index = fallbackApps.findIndex(a => a.id === id);
+    if (index !== -1) {
+      fallbackApps[index] = {
+        ...fallbackApps[index],
+        appName,
+        appImage: appImage || '',
+        description: description || '',
+        referralCode: referralCode || '',
+        appLink,
+        rewardBadge: badge,
+        category: cat
+      };
     }
 
     return NextResponse.json({
@@ -119,16 +202,53 @@ export async function POST(request: Request) {
       app: {
         id,
         appName,
-        appImage,
-        description,
-        referralCode,
+        appImage: appImage || '',
+        description: description || '',
+        referralCode: referralCode || '',
         appLink,
         rewardBadge: badge,
-        createdAt: new Date().toISOString().split('T')[0]
+        category: cat
       }
     });
   } catch (error: any) {
-    console.error('Error creating independent app:', error);
+    console.error('Error updating independent app:', error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let id = searchParams.get('id');
+
+    if (!id) {
+      try {
+        const body = await request.json();
+        id = body?.id;
+      } catch (e) {
+        // No body
+      }
+    }
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Task ID is required for deletion.' }, { status: 400 });
+    }
+
+    if (isDbConfigured) {
+      await sql`
+        DELETE FROM independent WHERE id = ${id};
+      `;
+    }
+
+    fallbackApps = fallbackApps.filter(a => a.id !== id);
+
+    return NextResponse.json({
+      success: true,
+      id,
+      message: 'Direct task deleted successfully.'
+    });
+  } catch (error: any) {
+    console.error('Error deleting independent app:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

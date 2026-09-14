@@ -64,6 +64,103 @@ const inMemoryUsers: any[] = [
 
 const inMemorySubmissions: any[] = [];
 const inMemoryPayoutRequests: any[] = [];
+const inMemoryIndependentApps: any[] = [
+  {
+    id: 'indep-angelone',
+    appName: 'Angel One Demat & Trading',
+    app_name: 'Angel One Demat & Trading',
+    appImage: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=160&auto=format&fit=crop&q=80',
+    app_image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=160&auto=format&fit=crop&q=80',
+    description: 'Complete paperless Aadhaar & PAN KYC verification. Instant demat account activation and direct cash reward credited to your bank.',
+    referralCode: 'ANGELDIRECT',
+    referral_code: 'ANGELDIRECT',
+    appLink: 'https://angelone.in/referral?ref=ANGELDIRECT',
+    app_link: 'https://angelone.in/referral?ref=ANGELDIRECT',
+    rewardBadge: '₹250 Direct Cash',
+    reward_badge: '₹250 Direct Cash',
+    category: 'Finance & Demat',
+    isActive: true,
+    is_active: true,
+    createdAt: '2026-09-12',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'indep-groww',
+    appName: 'Groww: Stocks & Mutual Funds',
+    app_name: 'Groww: Stocks & Mutual Funds',
+    appImage: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=160&auto=format&fit=crop&q=80',
+    app_image: 'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=160&auto=format&fit=crop&q=80',
+    description: 'Open a zero-maintenance Demat account on Groww. Complete KYC to receive instant cashback sent straight to your primary bank account.',
+    referralCode: 'GROWW2026',
+    referral_code: 'GROWW2026',
+    appLink: 'https://groww.in/open-demat-account?invite=GROWW2026',
+    app_link: 'https://groww.in/open-demat-account?invite=GROWW2026',
+    rewardBadge: '₹150 Instant Credit',
+    reward_badge: '₹150 Instant Credit',
+    category: 'Finance & Demat',
+    isActive: true,
+    is_active: true,
+    createdAt: '2026-09-11',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'indep-winzo',
+    appName: 'WinZO Games: Play & Win',
+    app_name: 'WinZO Games: Play & Win',
+    appImage: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=160&auto=format&fit=crop&q=80',
+    app_image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=160&auto=format&fit=crop&q=80',
+    description: 'Download verified Android APK and play casual games. Sign up with invite code for instant ₹50 wallet cash redeemable via UPI.',
+    referralCode: 'WINZO50',
+    referral_code: 'WINZO50',
+    appLink: 'https://winzogames.com/install?ref=WINZO50',
+    app_link: 'https://winzogames.com/install?ref=WINZO50',
+    rewardBadge: '₹50 Signup Bonus',
+    reward_badge: '₹50 Signup Bonus',
+    category: 'Casual Gaming',
+    isActive: true,
+    is_active: true,
+    createdAt: '2026-09-10',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'indep-swagbucks',
+    appName: 'Swagbucks India Surveys',
+    app_name: 'Swagbucks India Surveys',
+    appImage: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&auto=format&fit=crop&q=80',
+    app_image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=160&auto=format&fit=crop&q=80',
+    description: 'Participate in everyday consumer opinion surveys. Zero waiting time—rewards are credited and transferred directly via PayPal or gift cards.',
+    referralCode: 'SWAG2026',
+    referral_code: 'SWAG2026',
+    appLink: 'https://www.swagbucks.com/register?r=SWAG2026',
+    app_link: 'https://www.swagbucks.com/register?r=SWAG2026',
+    rewardBadge: '₹100 Direct Voucher',
+    reward_badge: '₹100 Direct Voucher',
+    category: 'Surveys & Tasks',
+    isActive: true,
+    is_active: true,
+    createdAt: '2026-09-09',
+    created_at: new Date().toISOString()
+  },
+  {
+    id: 'indep-navi',
+    appName: 'Navi: UPI, Loans & Digital Gold',
+    app_name: 'Navi: UPI, Loans & Digital Gold',
+    appImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=160&auto=format&fit=crop&q=80',
+    app_image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=160&auto=format&fit=crop&q=80',
+    description: 'Setup Navi UPI and make a minimum digital gold purchase of ₹10 to unlock a flat ₹100 direct cashback deposited into your UPI linked bank.',
+    referralCode: 'NAVI100',
+    referral_code: 'NAVI100',
+    appLink: 'https://navi.com/referral?code=NAVI100',
+    app_link: 'https://navi.com/referral?code=NAVI100',
+    rewardBadge: '₹100 Direct Cashback',
+    reward_badge: '₹100 Direct Cashback',
+    category: 'UPI & Banking',
+    isActive: true,
+    is_active: true,
+    createdAt: '2026-09-08',
+    created_at: new Date().toISOString()
+  }
+];
 
 const fallbackCampaigns: any[] = [
   {
@@ -315,6 +412,74 @@ function executeFallbackSql(strings: any, ...values: any[]): Promise<any[]> {
         req.processed_at = new Date().toISOString();
       }
     }
+    return Promise.resolve([]);
+  }
+
+  if (rawSql.includes('FROM independent')) {
+    const active = inMemoryIndependentApps.filter(a => a.is_active !== false);
+    return Promise.resolve(active);
+  }
+
+  if (rawSql.includes('INSERT INTO independent')) {
+    const newApp = {
+      id: values[0],
+      appName: values[1],
+      app_name: values[1],
+      appImage: values[2],
+      app_image: values[2],
+      description: values[3],
+      referralCode: values[4],
+      referral_code: values[4],
+      appLink: values[5],
+      app_link: values[5],
+      rewardBadge: values[6],
+      reward_badge: values[6],
+      category: values[7] || 'Finance & Demat',
+      isActive: true,
+      is_active: true,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    const existingIndex = inMemoryIndependentApps.findIndex(a => a.id === values[0]);
+    if (existingIndex !== -1) {
+      inMemoryIndependentApps[existingIndex] = newApp;
+    } else {
+      inMemoryIndependentApps.unshift(newApp);
+    }
+    return Promise.resolve([newApp]);
+  }
+
+  if (rawSql.includes('UPDATE independent')) {
+    const appName = values[0];
+    const appImage = values[1];
+    const description = values[2];
+    const referralCode = values[3];
+    const appLink = values[4];
+    const rewardBadge = values[5];
+    const category = values[6];
+    const idVal = values[7];
+
+    const app = inMemoryIndependentApps.find(a => a.id === idVal);
+    if (app) {
+      app.appName = appName;
+      app.app_name = appName;
+      app.appImage = appImage;
+      app.app_image = appImage;
+      app.description = description;
+      app.referralCode = referralCode;
+      app.referral_code = referralCode;
+      app.appLink = appLink;
+      app.app_link = appLink;
+      app.rewardBadge = rewardBadge;
+      app.reward_badge = rewardBadge;
+      if (category) app.category = category;
+    }
+    return Promise.resolve([]);
+  }
+
+  if (rawSql.includes('DELETE FROM independent')) {
+    const idVal = values[0];
+    const idx = inMemoryIndependentApps.findIndex(a => a.id === idVal);
+    if (idx !== -1) inMemoryIndependentApps.splice(idx, 1);
     return Promise.resolve([]);
   }
 
