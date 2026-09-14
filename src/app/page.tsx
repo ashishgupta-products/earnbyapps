@@ -58,7 +58,7 @@ export default function Home() {
   }, []);
 
 
-  const apkDownloadUrl = process.env.NEXT_PUBLIC_ANDROID_APK_URL || '/EarnByApps%20v-1.0.0.apk';
+  const apkDownloadUrl = process.env.NEXT_PUBLIC_ANDROID_APK_URL || '/EarnByapps%20v-1.0.1%20.apk';
 
   return (
     <div className="home-root-wrapper">
@@ -100,7 +100,7 @@ export default function Home() {
             <div className="hero-actions-row">
               <a 
                 href={apkDownloadUrl} 
-                download="EarnByApps-v1.0.0.apk"
+                download="EarnByApps-v1.0.1.apk"
                 className="main-apk-download-btn"
                 id="hero-download-apk-btn"
               >
@@ -113,7 +113,7 @@ export default function Home() {
                   <span className="apk-btn-sub">DIRECT ANDROID INSTALL</span>
                   <span className="apk-btn-main">Download App to Earn</span>
                 </div>
-                <span className="apk-file-badge">32 MB • APK</span>
+                <span className="apk-file-badge">33 MB • v1.0.1 APK</span>
               </a>
 
             </div>
@@ -414,12 +414,12 @@ export default function Home() {
               <AppLogo size={32} />
               <div>
                 <div className="sticky-app-title">EarnByApps APK</div>
-                <div className="sticky-app-sub">⭐ 4.7 • 32 MB • Free</div>
+                <div className="sticky-app-sub">⭐ 4.7 • 33 MB • v1.0.1 • Free</div>
               </div>
             </div>
             <a 
-              href={apkDownloadUrl}
-              download="EarnByApps-v1.0.0.apk"
+              href={apkDownloadUrl} 
+              download="EarnByApps-v1.0.1.apk"
               className="sticky-download-btn"
             >
               Download App

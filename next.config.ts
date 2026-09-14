@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/earnbyapps.apk',
-        destination: '/EarnByApps%20v-1.0.0.apk',
+        destination: '/EarnByapps%20v-1.0.1%20.apk',
+      },
+      {
+        source: '/EarnByApps%20v-1.0.0.apk',
+        destination: '/EarnByapps%20v-1.0.1%20.apk',
       },
     ];
   },
