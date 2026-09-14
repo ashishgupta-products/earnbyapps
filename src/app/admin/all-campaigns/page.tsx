@@ -45,6 +45,26 @@ export default function AdminAllCampaigns() {
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [countrySearchQuery, setCountrySearchQuery] = useState('');
 
+  // Image lightbox preview state
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const handleEditLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size exceeds 2MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setEditLogo(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
@@ -265,11 +285,63 @@ export default function AdminAllCampaigns() {
                 return (
                   <tr key={app.id}>
                     <td>
-                      <strong style={{ display: 'block' }}>{app.name}</strong>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                        <span style={{ fontSize: '0.7rem', padding: '1px 6px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          {flag} {app.targetCountry || 'India'}
-                        </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div 
+                          className="campaign-table-logo-wrap"
+                          onClick={() => app.logoUrl && setPreviewImage(app.logoUrl)}
+                          style={{ cursor: app.logoUrl ? 'pointer' : 'default' }}
+                          title={app.logoUrl ? 'Click to view full image' : undefined}
+                        >
+                          {app.logoUrl ? (
+                            <img
+                              src={app.logoUrl}
+                              alt={app.name}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLElement).style.display = 'none';
+                                const fallback = (e.currentTarget.parentElement?.querySelector('.logo-fallback') as HTMLElement);
+                                if (fallback) fallback.style.display = 'flex';
+                              }}
+                              className="campaign-table-logo-img"
+                            />
+                          ) : null}
+                          <div 
+                            className="logo-fallback" 
+                            style={{ display: app.logoUrl ? 'none' : 'flex' }}
+                          >
+                            {getCategoryIcon(app.category)}
+                          </div>
+                        </div>
+
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '0.92rem', color: 'var(--text-primary)' }}>{app.name}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '0.7rem', padding: '1px 6px', background: 'rgba(255,255,255,0.06)', borderRadius: '10px', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              {flag} {app.targetCountry || 'India'}
+                            </span>
+                            {app.logoUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewImage(app.logoUrl || null)}
+                                style={{
+                                  fontSize: '0.68rem',
+                                  padding: '1px 6px',
+                                  background: 'rgba(79, 70, 229, 0.12)',
+                                  border: '1px solid rgba(79, 70, 229, 0.25)',
+                                  color: 'var(--accent-indigo)',
+                                  borderRadius: '4px',
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
+                                }}
+                                title="Click to view full image"
+                              >
+                                <span>🖼️ Image</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td>
@@ -637,14 +709,64 @@ export default function AdminAllCampaigns() {
               </div>
 
               <div className="drawer-form-group">
-                <label>Developer Logo URL (Optional)</label>
-                <input 
-                  type="text" 
-                  value={editLogo} 
-                  onChange={(e) => setEditLogo(e.target.value)} 
-                  className="drawer-input"
-                  placeholder="earnbyapps_proofs/logo.png"
-                />
+                <label>Campaign Logo / Image (Optional)</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <input 
+                    type="text" 
+                    value={editLogo} 
+                    onChange={(e) => setEditLogo(e.target.value)} 
+                    className="drawer-input"
+                    placeholder="https://example.com/logo.png"
+                    style={{ flex: 1 }}
+                  />
+                  <label style={{ 
+                    cursor: 'pointer',
+                    padding: '9px 14px',
+                    background: 'rgba(79, 70, 229, 0.12)',
+                    border: '1px solid rgba(79, 70, 229, 0.3)',
+                    color: 'var(--accent-indigo)',
+                    borderRadius: '6px',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: 0
+                  }}>
+                    <span>📁 Browse</span>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleEditLogoUpload} 
+                      style={{ display: 'none' }} 
+                    />
+                  </label>
+                </div>
+
+                {/* Live Preview in Drawer */}
+                {editLogo && (
+                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-color)', padding: '10px 12px', borderRadius: '8px' }}>
+                    <img 
+                      src={editLogo} 
+                      alt="Logo preview" 
+                      onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                      style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {editLogo.startsWith('data:') ? 'Image uploaded from device' : editLogo}
+                      </span>
+                      <button 
+                        type="button" 
+                        onClick={() => setEditLogo('')} 
+                        style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '0.74rem', cursor: 'pointer', padding: 0, fontWeight: 600, marginTop: '3px' }}
+                      >
+                        Remove Image
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="drawer-form-group">
@@ -868,7 +990,163 @@ export default function AdminAllCampaigns() {
           color: var(--text-muted);
           text-align: center;
         }
+
+        /* Campaign Logo Table Styles */
+        .campaign-table-logo-wrap {
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid var(--border-color);
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+          transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .campaign-table-logo-wrap:hover {
+          transform: scale(1.05);
+          border-color: var(--accent-indigo);
+        }
+
+        .campaign-table-logo-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        .logo-fallback {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          color: var(--text-secondary);
+          background: rgba(79, 70, 229, 0.08);
+        }
       `}</style>
+
+      {/* Lightbox / Full-size Image Preview Modal */}
+      {previewImage && (
+        <div 
+          onClick={() => setPreviewImage(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: 99999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px'
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '16px',
+              padding: '20px',
+              maxWidth: '520px',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.5)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>🖼️</span>
+                <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-primary)' }}>Campaign Image Preview</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-muted)',
+                  borderRadius: '6px',
+                  width: '32px',
+                  height: '32px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{
+              width: '100%',
+              maxHeight: '400px',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              background: 'rgba(0,0,0,0.25)',
+              border: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <img
+                src={previewImage}
+                alt="Campaign Full Preview"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '380px',
+                  objectFit: 'contain',
+                  display: 'block'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <a
+                href={previewImage}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: '0.82rem',
+                  color: 'var(--accent-indigo)',
+                  textDecoration: 'none',
+                  fontWeight: 600
+                }}
+              >
+                Open original image in new tab ↗
+              </a>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                style={{
+                  padding: '8px 18px',
+                  background: 'var(--accent-indigo)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

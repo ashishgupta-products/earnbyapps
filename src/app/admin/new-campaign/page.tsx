@@ -33,6 +33,23 @@ export default function AdminNewCampaign() {
     }
   };
 
+  const handleLogoFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size exceeds 2MB limit.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setLogoUrl(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskName || !taskLink || platforms.length === 0 || !description || !allowedSubmissions) {
@@ -290,14 +307,64 @@ export default function AdminNewCampaign() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="logo-url">Campaign Logo URL (Optional)</label>
-              <input 
-                id="logo-url"
-                type="url" 
-                value={logoUrl} 
-                onChange={(e) => setLogoUrl(e.target.value)} 
-                placeholder="e.g. https://example.com/logo.png"
-              />
+              <label htmlFor="logo-url">Campaign Logo / Image (Optional)</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input 
+                  id="logo-url"
+                  type="text" 
+                  value={logoUrl} 
+                  onChange={(e) => setLogoUrl(e.target.value)} 
+                  placeholder="https://example.com/logo.png"
+                  style={{ flex: 1 }}
+                />
+                <label style={{ 
+                  cursor: 'pointer',
+                  padding: '9px 14px',
+                  background: 'rgba(79, 70, 229, 0.12)',
+                  border: '1px solid rgba(79, 70, 229, 0.3)',
+                  color: 'var(--accent-indigo)',
+                  borderRadius: '6px',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  margin: 0
+                }}>
+                  <span>📁 Browse</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleLogoFileUpload} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
+              </div>
+
+              {/* Live Preview */}
+              {logoUrl && (
+                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '8px 12px', borderRadius: '6px' }}>
+                  <img 
+                    src={logoUrl} 
+                    alt="Logo preview" 
+                    onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none'; }}
+                    style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {logoUrl.startsWith('data:') ? 'Image uploaded from device' : logoUrl}
+                    </span>
+                    <button 
+                      type="button" 
+                      onClick={() => setLogoUrl('')} 
+                      style={{ background: 'transparent', border: 'none', color: '#ef4444', fontSize: '0.72rem', cursor: 'pointer', padding: 0, fontWeight: 600, marginTop: '2px' }}
+                    >
+                      Remove Image
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
