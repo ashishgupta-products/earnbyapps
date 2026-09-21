@@ -3,14 +3,28 @@ import { sql, isDbConfigured } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const shouldPingDb = searchParams.get('db') === 'true';
+
+  // By default, return healthy status WITHOUT querying Neon to let Neon scale to zero and save compute hours
+  if (!shouldPingDb) {
+    return NextResponse.json({
+      status: 'ok',
+      service: 'earnbyapps-api',
+      mode: isDbConfigured ? 'database-configured' : 'fallback',
+      dbPing: 'disabled_to_save_compute',
+      timestamp: new Date().toISOString()
+    });
+  }
+
   if (!isDbConfigured) {
     return NextResponse.json({ status: 'ok', mode: 'fallback' });
   }
 
   const start = performance.now();
   try {
-    // Lightest possible query to keep Neon compute container warm
+    // Explicit ping requested
     await sql`SELECT 1 as ping`;
     const latency = Math.round(performance.now() - start);
 

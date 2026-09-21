@@ -182,125 +182,138 @@ export async function GET(request: Request) {
     const offset = (page - 1) * limit;
     const searchPattern = `%${search.toLowerCase()}%`;
 
-    let dbUsers;
-    let countRes;
+    const cacheKey = `users_p_${country}_${page}_${limit}_${search.toLowerCase()}`;
 
-    if (country === 'All Countries') {
-      const [dbUsersRes, countQueryRes] = await Promise.all([
-        sql`
-          SELECT u.id, u.email, u.full_name, u.phone, u.gender, u.country, u.role, u.balance, u.payment_method, u.payment_details, u.is_blocked, u.created_at,
-            COALESCE(sub.count, 0) as tasks_done,
-            COALESCE(payout_agg.pending_payout, 0) as pending_payout,
-            COALESCE(payout_agg.total_cashed_out, 0) as total_cashed_out
-          FROM users u
-          LEFT JOIN (
-            SELECT user_email, COUNT(*) as count 
-            FROM submissions 
-            WHERE status = 'Paid'
-            GROUP BY user_email
-          ) sub ON u.email = sub.user_email
-          LEFT JOIN (
-            SELECT 
-              user_email,
-              SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as pending_payout,
-              SUM(CASE WHEN status = 'Processed' THEN amount ELSE 0 END) as total_cashed_out
-            FROM payout_requests
-            GROUP BY user_email
-          ) payout_agg ON LOWER(u.email) = LOWER(payout_agg.user_email)
-          WHERE (
-            LOWER(u.full_name) LIKE ${searchPattern} OR
-            LOWER(u.email) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
-            CAST(u.id AS TEXT) LIKE ${searchPattern}
-          )
-          ORDER BY u.created_at DESC
-          LIMIT ${limit} OFFSET ${offset}
-        `,
-        sql`
-          SELECT COUNT(*) as count 
-          FROM users u
-          WHERE (
-            LOWER(u.full_name) LIKE ${searchPattern} OR
-            LOWER(u.email) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
-            CAST(u.id AS TEXT) LIKE ${searchPattern}
-          )
-        `
-      ]);
-      dbUsers = dbUsersRes;
-      countRes = countQueryRes;
-    } else {
-      const [dbUsersRes, countQueryRes] = await Promise.all([
-        sql`
-          SELECT u.id, u.email, u.full_name, u.phone, u.gender, u.country, u.role, u.balance, u.payment_method, u.payment_details, u.is_blocked, u.created_at,
-            COALESCE(sub.count, 0) as tasks_done,
-            COALESCE(payout_agg.pending_payout, 0) as pending_payout,
-            COALESCE(payout_agg.total_cashed_out, 0) as total_cashed_out
-          FROM users u
-          LEFT JOIN (
-            SELECT user_email, COUNT(*) as count 
-            FROM submissions 
-            WHERE status = 'Paid'
-            GROUP BY user_email
-          ) sub ON u.email = sub.user_email
-          LEFT JOIN (
-            SELECT 
-              user_email,
-              SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as pending_payout,
-              SUM(CASE WHEN status = 'Processed' THEN amount ELSE 0 END) as total_cashed_out
-            FROM payout_requests
-            GROUP BY user_email
-          ) payout_agg ON LOWER(u.email) = LOWER(payout_agg.user_email)
-          WHERE u.country = ${country} AND (
-            LOWER(u.full_name) LIKE ${searchPattern} OR
-            LOWER(u.email) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
-            CAST(u.id AS TEXT) LIKE ${searchPattern}
-          )
-          ORDER BY u.created_at DESC
-          LIMIT ${limit} OFFSET ${offset}
-        `,
-        sql`
-          SELECT COUNT(*) as count 
-          FROM users u
-          WHERE u.country = ${country} AND (
-            LOWER(u.full_name) LIKE ${searchPattern} OR
-            LOWER(u.email) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
-            LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
-            CAST(u.id AS TEXT) LIKE ${searchPattern}
-          )
-        `
-      ]);
-      dbUsers = dbUsersRes;
-      countRes = countQueryRes;
-    }
+    const { formattedUsers, totalCount } = await getCachedData(cacheKey, 20, async () => {
+      let dbUsers;
+      let countRes;
 
-    const totalCount = parseInt(countRes[0]?.count || '0');
+      if (country === 'All Countries') {
+        const [dbUsersRes, countQueryRes] = await Promise.all([
+          sql`
+            SELECT u.id, u.email, u.full_name, u.phone, u.gender, u.country, u.role, u.balance, u.payment_method, u.payment_details, u.is_blocked, u.created_at,
+              COALESCE(sub.count, 0) as tasks_done,
+              COALESCE(payout_agg.pending_payout, 0) as pending_payout,
+              COALESCE(payout_agg.total_cashed_out, 0) as total_cashed_out
+            FROM users u
+            LEFT JOIN (
+              SELECT user_email, COUNT(*) as count 
+              FROM submissions 
+              WHERE status = 'Paid'
+              GROUP BY user_email
+            ) sub ON u.email = sub.user_email
+            LEFT JOIN (
+              SELECT 
+                user_email,
+                SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as pending_payout,
+                SUM(CASE WHEN status = 'Processed' THEN amount ELSE 0 END) as total_cashed_out
+              FROM payout_requests
+              GROUP BY user_email
+            ) payout_agg ON LOWER(u.email) = LOWER(payout_agg.user_email)
+            WHERE (
+              LOWER(u.full_name) LIKE ${searchPattern} OR
+              LOWER(u.email) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
+              CAST(u.id AS TEXT) LIKE ${searchPattern}
+            )
+            ORDER BY u.created_at DESC
+            LIMIT ${limit} OFFSET ${offset}
+          `,
+          sql`
+            SELECT COUNT(*) as count 
+            FROM users u
+            WHERE (
+              LOWER(u.full_name) LIKE ${searchPattern} OR
+              LOWER(u.email) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
+              CAST(u.id AS TEXT) LIKE ${searchPattern}
+            )
+          `
+        ]);
+        dbUsers = dbUsersRes;
+        countRes = countQueryRes;
+      } else {
+        const [dbUsersRes, countQueryRes] = await Promise.all([
+          sql`
+            SELECT u.id, u.email, u.full_name, u.phone, u.gender, u.country, u.role, u.balance, u.payment_method, u.payment_details, u.is_blocked, u.created_at,
+              COALESCE(sub.count, 0) as tasks_done,
+              COALESCE(payout_agg.pending_payout, 0) as pending_payout,
+              COALESCE(payout_agg.total_cashed_out, 0) as total_cashed_out
+            FROM users u
+            LEFT JOIN (
+              SELECT user_email, COUNT(*) as count 
+              FROM submissions 
+              WHERE status = 'Paid'
+              GROUP BY user_email
+            ) sub ON u.email = sub.user_email
+            LEFT JOIN (
+              SELECT 
+                user_email,
+                SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as pending_payout,
+                SUM(CASE WHEN status = 'Processed' THEN amount ELSE 0 END) as total_cashed_out
+              FROM payout_requests
+              GROUP BY user_email
+            ) payout_agg ON LOWER(u.email) = LOWER(payout_agg.user_email)
+            WHERE u.country = ${country} AND (
+              LOWER(u.full_name) LIKE ${searchPattern} OR
+              LOWER(u.email) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
+              CAST(u.id AS TEXT) LIKE ${searchPattern}
+            )
+            ORDER BY u.created_at DESC
+            LIMIT ${limit} OFFSET ${offset}
+          `,
+          sql`
+            SELECT COUNT(*) as count 
+            FROM users u
+            WHERE u.country = ${country} AND (
+              LOWER(u.full_name) LIKE ${searchPattern} OR
+              LOWER(u.email) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.phone, '')) LIKE ${searchPattern} OR
+              LOWER(COALESCE(u.payment_details, '')) LIKE ${searchPattern} OR
+              CAST(u.id AS TEXT) LIKE ${searchPattern}
+            )
+          `
+        ]);
+        dbUsers = dbUsersRes;
+        countRes = countQueryRes;
+      }
 
-    const formattedUsers = dbUsers.map(u => ({
-      id: String(u.id),
-      name: u.full_name,
-      email: u.email,
-      phone: u.phone || 'N/A',
-      gender: u.gender || 'N/A',
-      upi: u.payment_details || 'N/A',
-      country: u.country || 'India',
-      tasksDone: parseInt(String(u.tasks_done || '0')),
-      isBlocked: !!u.is_blocked,
-      lastLogin: u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A',
-      role: u.role === 'admin' ? 'Admin' : (u.role === 'partner' ? 'Partner' : 'Earner'),
-      balance: Number(u.balance || 0.00),
-      pendingPayout: Number(u.pending_payout || 0.00),
-      totalCashedOut: Number(u.total_cashed_out || 0.00)
-    }));
+      const count = parseInt(countRes[0]?.count || '0');
+
+      const formatted = dbUsers.map(u => ({
+        id: String(u.id),
+        name: u.full_name,
+        email: u.email,
+        phone: u.phone || 'N/A',
+        gender: u.gender || 'N/A',
+        upi: u.payment_details || 'N/A',
+        country: u.country || 'India',
+        tasksDone: parseInt(String(u.tasks_done || '0')),
+        isBlocked: !!u.is_blocked,
+        lastLogin: u.created_at ? new Date(u.created_at).toLocaleString() : 'N/A',
+        role: u.role === 'admin' ? 'Admin' : (u.role === 'partner' ? 'Partner' : 'Earner'),
+        balance: Number(u.balance || 0.00),
+        pendingPayout: Number(u.pending_payout || 0.00),
+        totalCashedOut: Number(u.total_cashed_out || 0.00)
+      }));
+
+      return {
+        formattedUsers: formatted,
+        totalCount: count
+      };
+    });
 
     return NextResponse.json({
       users: formattedUsers,
       totalCount
+    }, {
+      headers: {
+        'Cache-Control': 'private, max-age=10, stale-while-revalidate=20'
+      }
     });
   } catch (error: any) {
     console.error('Error fetching users from Neon PostgreSQL database:', error);
@@ -335,6 +348,7 @@ export async function POST(request: Request) {
     `;
 
     invalidateCache('user_profile_');
+    invalidateCache('users_');
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
@@ -362,6 +376,7 @@ export async function PUT(request: Request) {
       SET is_blocked = ${isBlocked} 
       WHERE id = ${userId}
     `;
+    invalidateCache('users_');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error updating block status:', error);
@@ -383,6 +398,7 @@ export async function DELETE(request: Request) {
     }
 
     await sql`DELETE FROM users WHERE id = ${userId}`;
+    invalidateCache('users_');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting user:', error);
@@ -422,6 +438,7 @@ export async function PATCH(request: Request) {
     `;
 
     invalidateCache(`user_profile_${normalizedEmail}`);
+    invalidateCache('users_');
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

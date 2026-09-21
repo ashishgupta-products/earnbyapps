@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sql, isDbConfigured } from '../../../lib/db';
+import { getCachedData, invalidateCache } from '../../../lib/cache';
 
 const INITIAL_FALLBACK_APPS = [
   {
@@ -69,26 +70,31 @@ let fallbackApps = [...INITIAL_FALLBACK_APPS];
 export async function GET() {
   try {
     if (isDbConfigured) {
-      const rows = await sql`
-        SELECT 
-          id, 
-          app_name as "appName", 
-          app_image as "appImage", 
-          description, 
-          referral_code as "referralCode", 
-          app_link as "appLink", 
-          reward_badge as "rewardBadge", 
-          COALESCE(category, 'Finance & Demat') as "category",
-          is_active as "isActive", 
-          to_char(created_at, 'YYYY-MM-DD') as "createdAt"
-        FROM independent 
-        WHERE is_active = true 
-        ORDER BY created_at DESC;
-      `;
+      const cachedApps = await getCachedData('independent_apps', 60, async () => {
+        const rows = await sql`
+          SELECT 
+            id, 
+            app_name as "appName", 
+            app_image as "appImage", 
+            description, 
+            referral_code as "referralCode", 
+            app_link as "appLink", 
+            reward_badge as "rewardBadge", 
+            COALESCE(category, 'Finance & Demat') as "category",
+            is_active as "isActive", 
+            to_char(created_at, 'YYYY-MM-DD') as "createdAt"
+          FROM independent 
+          WHERE is_active = true 
+          ORDER BY created_at DESC;
+        `;
+        return Array.isArray(rows) ? rows : fallbackApps;
+      });
 
-      if (Array.isArray(rows)) {
-        return NextResponse.json({ success: true, apps: rows });
-      }
+      return NextResponse.json({ success: true, apps: cachedApps }, {
+        headers: {
+          'Cache-Control': 'public, max-age=30, s-maxage=60, stale-while-revalidate=120'
+        }
+      });
     }
 
     return NextResponse.json({ success: true, apps: fallbackApps });
@@ -142,6 +148,7 @@ export async function POST(request: Request) {
     };
 
     fallbackApps = [newApp, ...fallbackApps.filter(a => a.id !== id)];
+    invalidateCache('independent_apps');
 
     return NextResponse.json({
       success: true,
@@ -197,6 +204,8 @@ export async function PUT(request: Request) {
       };
     }
 
+    invalidateCache('independent_apps');
+
     return NextResponse.json({
       success: true,
       app: {
@@ -241,6 +250,7 @@ export async function DELETE(request: Request) {
     }
 
     fallbackApps = fallbackApps.filter(a => a.id !== id);
+    invalidateCache('independent_apps');
 
     return NextResponse.json({
       success: true,

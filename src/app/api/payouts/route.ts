@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { sql } from '../../../lib/db';
 import { getAuthenticatedUser } from '../../../lib/authHelper';
-import { invalidateCache } from '../../../lib/cache';
+import { getCachedData, invalidateCache } from '../../../lib/cache';
 
 const MINIMUM_WITHDRAWAL_AMOUNT = 20.00;
 
@@ -47,27 +47,36 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized to view this payout history.' }, { status: 403 });
       }
 
-      // Return history for a specific user
-      const requests = await sql`
-        SELECT * FROM payout_requests
-        WHERE LOWER(user_email) = ${userEmail.toLowerCase()}
-        ORDER BY created_at DESC
-      `;
-      return NextResponse.json({
-        success: true,
-        requests: requests.map(r => ({
-          id: r.id,
-          userName: r.user_name,
-          userEmail: r.user_email,
-          amount: Number(r.amount),
-          payoutRail: r.payout_rail,
-          payoutDetails: r.payout_details,
-          status: r.status,
-          transactionRef: r.transaction_ref || null,
-          adminNotes: r.admin_notes || null,
-          date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A',
-          processedAt: r.processed_at ? new Date(r.processed_at).toLocaleString() : null
-        }))
+      // Return history for a specific user with RAM cache
+      const cacheKey = `payouts_user_${targetEmail}`;
+      const payload = await getCachedData(cacheKey, 15, async () => {
+        const requests = await sql`
+          SELECT * FROM payout_requests
+          WHERE LOWER(user_email) = ${targetEmail}
+          ORDER BY created_at DESC
+        `;
+        return {
+          success: true,
+          requests: requests.map(r => ({
+            id: r.id,
+            userName: r.user_name,
+            userEmail: r.user_email,
+            amount: Number(r.amount),
+            payoutRail: r.payout_rail,
+            payoutDetails: r.payout_details,
+            status: r.status,
+            transactionRef: r.transaction_ref || null,
+            adminNotes: r.admin_notes || null,
+            date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A',
+            processedAt: r.processed_at ? new Date(r.processed_at).toLocaleString() : null
+          }))
+        };
+      });
+
+      return NextResponse.json(payload, {
+        headers: {
+          'Cache-Control': 'private, max-age=10, stale-while-revalidate=20'
+        }
       });
     }
 
@@ -76,65 +85,74 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden: Admin access required to view all payouts.' }, { status: 403 });
     }
 
-    const allRequests = await sql`
-      SELECT * FROM payout_requests
-      ORDER BY created_at DESC
-    `;
-
-    // Query platform wallet balances
-    let totalWalletBalance = 0;
-    let fundedUsersCount = 0;
-    try {
-      const walletRes = await sql`
-        SELECT 
-          COALESCE(SUM(balance), 0) as total_wallet_balance,
-          COUNT(CASE WHEN balance > 0 THEN 1 END) as funded_users_count
-        FROM users
+    const adminCacheKey = 'payouts_admin_summary';
+    const adminPayload = await getCachedData(adminCacheKey, 15, async () => {
+      const allRequests = await sql`
+        SELECT * FROM payout_requests
+        ORDER BY created_at DESC
       `;
-      if (walletRes.length > 0) {
-        totalWalletBalance = Number(walletRes[0].total_wallet_balance || 0);
-        fundedUsersCount = Number(walletRes[0].funded_users_count || 0);
+
+      // Query platform wallet balances
+      let totalWalletBalance = 0;
+      let fundedUsersCount = 0;
+      try {
+        const walletRes = await sql`
+          SELECT 
+            COALESCE(SUM(balance), 0) as total_wallet_balance,
+            COUNT(CASE WHEN balance > 0 THEN 1 END) as funded_users_count
+          FROM users
+        `;
+        if (walletRes.length > 0) {
+          totalWalletBalance = Number(walletRes[0].total_wallet_balance || 0);
+          fundedUsersCount = Number(walletRes[0].funded_users_count || 0);
+        }
+      } catch (e) {
+        console.warn("Could not query user wallet aggregates:", e);
       }
-    } catch (e) {
-      console.warn("Could not query user wallet aggregates:", e);
-    }
 
-    const formatted = allRequests.map(r => ({
-      id: r.id,
-      userId: r.user_id,
-      name: r.user_name,
-      email: r.user_email,
-      amount: Number(r.amount),
-      payoutRail: r.payout_rail,
-      upi: r.payout_details,
-      status: r.status,
-      transactionRef: r.transaction_ref || null,
-      adminNotes: r.admin_notes || null,
-      date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A',
-      processedAt: r.processed_at ? new Date(r.processed_at).toLocaleString() : null
-    }));
+      const formatted = allRequests.map(r => ({
+        id: r.id,
+        userId: r.user_id,
+        name: r.user_name,
+        email: r.user_email,
+        amount: Number(r.amount),
+        payoutRail: r.payout_rail,
+        upi: r.payout_details,
+        status: r.status,
+        transactionRef: r.transaction_ref || null,
+        adminNotes: r.admin_notes || null,
+        date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A',
+        processedAt: r.processed_at ? new Date(r.processed_at).toLocaleString() : null
+      }));
 
-    const pendingSum = formatted
-      .filter(p => p.status === 'Pending')
-      .reduce((sum, p) => sum + p.amount, 0);
+      const pendingSum = formatted
+        .filter(p => p.status === 'Pending')
+        .reduce((sum, p) => sum + p.amount, 0);
 
-    const disbursedSum = formatted
-      .filter(p => p.status === 'Processed')
-      .reduce((sum, p) => sum + p.amount, 0);
+      const disbursedSum = formatted
+        .filter(p => p.status === 'Processed')
+        .reduce((sum, p) => sum + p.amount, 0);
 
-    const rejectedSum = formatted
-      .filter(p => p.status === 'Rejected')
-      .reduce((sum, p) => sum + p.amount, 0);
+      const rejectedSum = formatted
+        .filter(p => p.status === 'Rejected')
+        .reduce((sum, p) => sum + p.amount, 0);
 
-    return NextResponse.json({
-      success: true,
-      requests: formatted,
-      pendingCount: formatted.filter(p => p.status === 'Pending').length,
-      pendingSum,
-      disbursedSum,
-      rejectedSum,
-      totalWalletBalance,
-      fundedUsersCount
+      return {
+        success: true,
+        requests: formatted,
+        pendingCount: formatted.filter(p => p.status === 'Pending').length,
+        pendingSum,
+        disbursedSum,
+        rejectedSum,
+        totalWalletBalance,
+        fundedUsersCount
+      };
+    });
+
+    return NextResponse.json(adminPayload, {
+      headers: {
+        'Cache-Control': 'private, max-age=10, stale-while-revalidate=20'
+      }
     });
   } catch (error: any) {
     console.error('Error fetching payout requests:', error);
@@ -235,6 +253,8 @@ export async function POST(request: Request) {
       )
     `;
 
+    invalidateCache('payouts_');
+
     const newBalance = currentBalance - withdrawAmt;
 
     return NextResponse.json({
@@ -319,6 +339,8 @@ export async function PUT(request: Request) {
         WHERE id = ${id}
       `;
     }
+
+    invalidateCache('payouts_');
 
     return NextResponse.json({ success: true, status });
   } catch (error: any) {
