@@ -27,14 +27,6 @@ const FAQS = [
   {
     q: 'Is it safe to install the APK on Android?',
     a: 'Yes! The APK is built directly from verified source code and scanned clean. It requires standard app permissions and does not access your sensitive personal data or financial passwords.'
-  },
-  {
-    q: 'Can I earn on both the Android App and the website?',
-    a: 'Yes! Your account and wallet balance are synchronized in real-time. You can complete tasks on our website offerwall or through the Android APK using the same Google login.'
-  },
-  {
-    q: 'How does the Refer & Earn program work?',
-    a: 'When your friend downloads EarnByApps with your referral link or code, you automatically earn an instant bonus plus up to 50% commission on every task they complete for life!'
   }
 ];
 
@@ -387,7 +379,6 @@ export default function Home() {
           <div className="footer-right-links">
             <div className="footer-col">
               <h4>Quick Links</h4>
-              <Link href="/offerwall">Live Offerwall</Link>
               <Link href="#how-it-works">How It Works</Link>
               <Link href="#faq">FAQs</Link>
               <Link href="/login">User Login</Link>
@@ -470,9 +461,9 @@ export default function Home() {
         }
         .hero-trust-tag {
           display: inline-block;
-          background: rgba(245, 158, 11, 0.12);
-          border: 1px solid rgba(245, 158, 11, 0.35);
-          color: #b45309;
+          background: rgba(79, 70, 229, 0.1);
+          border: 1px solid rgba(79, 70, 229, 0.25);
+          color: #4f46e5;
           font-size: 0.85rem;
           font-weight: 700;
           padding: 6px 14px;
@@ -488,7 +479,7 @@ export default function Home() {
           color: var(--text-primary, #0f172a);
         }
         .highlight-gradient {
-          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #EAA812 100%);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 50%, #6366f1 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -603,7 +594,7 @@ export default function Home() {
         .hero-stat-box .stat-number {
           font-size: 1.35rem;
           font-weight: 900;
-          color: #d97706;
+          color: #4f46e5;
         }
         .hero-stat-box .stat-label {
           font-size: 0.75rem;
@@ -757,8 +748,8 @@ export default function Home() {
           margin-top: 2px;
         }
         .mockup-withdraw-btn {
-          background: #f59e0b;
-          color: #000000;
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          color: #ffffff;
           border: none;
           font-size: 0.75rem;
           font-weight: 800;
@@ -784,8 +775,8 @@ export default function Home() {
           color: #94a3b8;
         }
         .mockup-chip.active {
-          background: rgba(245, 158, 11, 0.2);
-          color: #f59e0b;
+          background: rgba(79, 70, 229, 0.2);
+          color: #4f46e5;
         }
         .mockup-tasks-list {
           display: flex;
@@ -847,7 +838,7 @@ export default function Home() {
           color: #64748b;
         }
         .nav-tab.active {
-          color: #f59e0b;
+          color: #4f46e5;
           font-weight: 800;
         }
 
@@ -909,8 +900,9 @@ export default function Home() {
           font-weight: 800;
           letter-spacing: 0.08em;
           text-transform: uppercase;
-          color: #b45309;
-          background: rgba(245, 158, 11, 0.12);
+          color: #4f46e5;
+          background: rgba(79, 70, 229, 0.1);
+          border: 1px solid rgba(79, 70, 229, 0.25);
           padding: 4px 12px;
           border-radius: 16px;
           margin-bottom: 10px;
@@ -948,7 +940,7 @@ export default function Home() {
         }
         .earner-step-card:hover {
           transform: translateY(-4px);
-          border-color: rgba(245, 158, 11, 0.5);
+          border-color: rgba(79, 70, 229, 0.4);
           box-shadow: var(--shadow-md);
         }
         .earner-step-card.featured-step {
@@ -958,7 +950,7 @@ export default function Home() {
         .step-number-tag {
           font-size: 0.72rem;
           font-weight: 900;
-          color: #b45309;
+          color: #4f46e5;
           letter-spacing: 0.08em;
           margin-bottom: 16px;
         }
@@ -966,7 +958,7 @@ export default function Home() {
           width: 56px;
           height: 56px;
           border-radius: 16px;
-          background: rgba(245, 158, 11, 0.12);
+          background: rgba(79, 70, 229, 0.1);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -974,7 +966,7 @@ export default function Home() {
           margin-bottom: 20px;
         }
         .earner-step-card.featured-step .step-icon-circle {
-          background: rgba(79, 70, 229, 0.15);
+          background: rgba(79, 70, 229, 0.18);
         }
         .step-heading {
           font-size: 1.25rem;
@@ -1009,8 +1001,8 @@ export default function Home() {
           box-shadow: var(--shadow-sm);
         }
         .faq-accordion-item:hover, .faq-accordion-item.open {
-          border-color: #f59e0b;
-          background: #fffdfa;
+          border-color: #4f46e5;
+          background: var(--bg-card-hover, #f8fafc);
         }
         .faq-question-row {
           display: flex;
@@ -1025,7 +1017,7 @@ export default function Home() {
         }
         .faq-toggle-icon {
           font-size: 1.4rem;
-          color: #f59e0b;
+          color: #4f46e5;
           font-weight: bold;
         }
         .faq-answer-box {

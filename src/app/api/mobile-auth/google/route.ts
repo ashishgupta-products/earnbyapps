@@ -148,6 +148,10 @@ export async function POST(request: Request) {
           balance: Number(user.balance || 0.00),
           picture,
           originAppId: user.origin_app_id || 'mobile',
+          phone: user.phone && user.phone !== 'N/A' ? String(user.phone) : undefined,
+          gender: user.gender && user.gender !== 'N/A' ? String(user.gender) : undefined,
+          paymentDetails: user.payment_details && user.payment_details !== 'N/A' ? String(user.payment_details) : undefined,
+          upiId: user.payment_details && user.payment_details !== 'N/A' ? String(user.payment_details) : (user.phone && user.phone !== 'N/A' ? String(user.phone) : undefined),
         },
       },
       { status: 200, headers: corsHeaders }

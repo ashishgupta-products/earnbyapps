@@ -391,7 +391,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .dynamic-part {
           flex: 1;
           text-align: left;
-          color: #d97706;
+          color: #4f46e5;
           font-weight: 800;
           position: relative;
           white-space: nowrap;
@@ -400,14 +400,14 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           display: inline-block;
           width: 3px;
           height: 1.25rem;
-          background-color: #EAA812;
+          background-color: #4f46e5;
           margin-left: 2px;
           vertical-align: text-bottom;
           animation: blink 0.75s step-end infinite;
         }
         @keyframes blink {
           from, to { background-color: transparent }
-          50% { background-color: #EAA812; }
+          50% { background-color: #4f46e5; }
         }
 
         /* Promo card refinements */
@@ -428,7 +428,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: transform 0.25s ease, border-color 0.25s ease;
         }
         .promo-container-box:hover {
-          border-color: #EAA812;
+          border-color: #4f46e5;
           transform: translateY(-2px);
         }
         .promo-badge-tag {
@@ -436,12 +436,12 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          background: rgba(234, 168, 18, 0.12);
-          color: #b45309;
+          background: rgba(79, 70, 229, 0.1);
+          color: #4f46e5;
           padding: 4px 12px;
           border-radius: 20px;
           margin-bottom: 12px;
-          border: 1px solid rgba(234, 168, 18, 0.3);
+          border: 1px solid rgba(79, 70, 229, 0.25);
         }
         .promo-actions-row {
           display: flex;
@@ -453,8 +453,8 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         }
         .glow-btn-grow,
         .landing-page-main .glow-btn-purple {
-          background: linear-gradient(135deg, #EAA812 0%, #c98a08 100%);
-          border: 1px solid rgba(234, 168, 18, 0.4);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          border: 1px solid rgba(79, 70, 229, 0.4);
           color: #ffffff !important;
           padding: 12px 24px;
           border-radius: 8px;
@@ -468,12 +468,12 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           justify-content: center;
           gap: 8px;
           text-decoration: none;
-          box-shadow: 0 4px 16px rgba(234, 168, 18, 0.35);
+          box-shadow: 0 4px 16px rgba(79, 70, 229, 0.35);
         }
         .glow-btn-grow:hover,
         .landing-page-main .glow-btn-purple:hover {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-          box-shadow: 0 6px 22px rgba(234, 168, 18, 0.45);
+          background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+          box-shadow: 0 6px 22px rgba(79, 70, 229, 0.45);
           transform: translateY(-2px);
         }
         .glow-btn-grow:active,
@@ -527,9 +527,9 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.06em;
-          color: #b45309;
-          background: rgba(234, 168, 18, 0.1);
-          border: 1px solid rgba(234, 168, 18, 0.25);
+          color: #4f46e5;
+          background: rgba(79, 70, 229, 0.1);
+          border: 1px solid rgba(79, 70, 229, 0.25);
           padding: 4px 14px;
           border-radius: 999px;
           margin-bottom: 12px;
@@ -580,7 +580,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           font-family: var(--font-display);
           font-size: 2.3rem;
           font-weight: 900;
-          color: #c98a08;
+          color: #4f46e5;
           letter-spacing: -0.03em;
           line-height: 1.1;
           margin-bottom: 6px;
@@ -615,18 +615,18 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         }
         .step-card:hover {
           transform: translateY(-4px);
-          border-color: #EAA812;
+          border-color: #4f46e5;
         }
         .featured-step {
-          background: linear-gradient(180deg, rgba(234, 168, 18, 0.05) 0%, var(--bg-card) 100%);
-          border-color: rgba(234, 168, 18, 0.4);
+          background: linear-gradient(180deg, rgba(79, 70, 229, 0.05) 0%, var(--bg-card) 100%);
+          border-color: rgba(79, 70, 229, 0.35);
         }
         .step-number-bubble {
           font-family: var(--font-display);
           font-size: 0.85rem;
           font-weight: 800;
-          color: #b45309;
-          background: rgba(234, 168, 18, 0.12);
+          color: #4f46e5;
+          background: rgba(79, 70, 229, 0.1);
           padding: 4px 10px;
           border-radius: 8px;
           margin-bottom: 16px;
@@ -675,7 +675,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: all 0.2s ease;
         }
         .channel-box:hover {
-          border-color: #EAA812;
+          border-color: #4f46e5;
           background: var(--bg-card-hover);
           transform: translateY(-3px);
         }
@@ -685,7 +685,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(234, 168, 18, 0.08);
+          background: rgba(79, 70, 229, 0.08);
           border-radius: 12px;
           border: 1px solid var(--border-color);
           margin-bottom: 16px;
@@ -711,8 +711,8 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .channel-badge {
           font-size: 0.72rem;
           font-weight: 700;
-          color: #b45309;
-          background: rgba(234, 168, 18, 0.12);
+          color: #4f46e5;
+          background: rgba(79, 70, 229, 0.1);
           padding: 3px 8px;
           border-radius: 6px;
         }
@@ -735,7 +735,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           transition: border-color 0.2s ease, background-color 0.2s ease;
         }
         .faq-item:hover, .faq-item-open {
-          border-color: #EAA812;
+          border-color: #4f46e5;
           background: var(--bg-card-hover);
         }
         .faq-question-row {
@@ -754,7 +754,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         .faq-toggle-icon {
           font-size: 1.4rem;
           font-weight: 600;
-          color: #c98a08;
+          color: #4f46e5;
         }
         .faq-answer-block {
           margin-top: 14px;

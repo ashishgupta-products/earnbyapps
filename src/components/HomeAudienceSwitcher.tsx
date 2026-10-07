@@ -93,8 +93,8 @@ export default function HomeAudienceSwitcher({
         }
         .switcher-glider.glider-grow {
           transform: translateX(100%);
-          background: linear-gradient(135deg, #EAA812 0%, #c98a08 100%);
-          box-shadow: 0 4px 14px rgba(234, 168, 18, 0.38);
+          background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+          box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
         }
 
         /* Interactive Tabs */
@@ -126,12 +126,7 @@ export default function HomeAudienceSwitcher({
         }
         .switcher-tab.is-active {
           color: #ffffff;
-        }
-        .switcher-tab.tab-earn.is-active {
           text-shadow: 0 1px 2px rgba(15, 23, 42, 0.3);
-        }
-        .switcher-tab.tab-grow.is-active {
-          text-shadow: 0 1px 2px rgba(120, 53, 15, 0.35);
         }
 
         .tab-icon {

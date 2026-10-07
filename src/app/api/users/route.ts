@@ -48,6 +48,7 @@ export async function GET(request: Request) {
           name: u.full_name,
           email: u.email,
           phone: u.phone || 'N/A',
+          gender: u.gender || 'N/A',
           paymentMethod: u.payment_method || 'UPI',
           paymentDetails: u.payment_details || 'N/A',
           balance: Number(u.balance || 0.00)
