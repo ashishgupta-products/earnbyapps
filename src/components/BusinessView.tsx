@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { getCategoryIcon } from '@/data/apps';
+import AppLogo from '@/components/AppLogo';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () => void }) {
   const { data: session } = useSession();
@@ -83,7 +85,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
     <main className="landing-page-main">
       
       {/* 1. HERO SECTION */}
-      <section className="landing-hero-section">
+      <section className="landing-hero-section" id="hero">
         <div className="landing-content-container">
           
           {/* Capsule Badge */}
@@ -109,7 +111,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           </p>
 
           {/* Promo Credit card box */}
-          <div className="promo-container-box">
+          <div className="promo-container-box" id="campaign">
             <div className="promo-badge-tag">🔥 Special Launch Offer</div>
             <h2 className="promo-header">
               100 Free Credits for 1st Campaign!
@@ -165,7 +167,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
       </section>
 
       {/* 3. HOW IT WORKS (3 SIMPLE STEPS) */}
-      <section className="landing-section">
+      <section className="landing-section" id="how-it-works">
         <div className="section-header-block">
           <div className="section-pill">Simple 3-Step Process</div>
           <h2 className="section-main-heading">How EarnByApps Delivers Guaranteed Scale</h2>
@@ -208,7 +210,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
       </section>
 
       {/* 4. MULTI-CHANNEL CONVERSION CHANNELS */}
-      <section className="landing-section">
+      <section className="landing-section" id="channels">
         <div className="section-header-block">
           <div className="section-pill">Acquisition Channels</div>
           <h2 className="section-main-heading">Every Conversion Goal Under One Roof</h2>
@@ -288,7 +290,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
 
 
       {/* 8. FAQ ACCORDION */}
-      <section className="landing-section">
+      <section className="landing-section" id="faq">
         <div className="section-header-block">
           <div className="section-pill">Got Questions?</div>
           <h2 className="section-main-heading">Frequently Asked Questions</h2>
@@ -318,6 +320,138 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
         </div>
       </section>
 
+      {/* 9. GROWTH PRE-FOOTER CTA BANNER */}
+      <section className="growth-cta-section">
+        <div className="growth-cta-card">
+          <div className="growth-cta-pill">
+            <span>🚀 100 Free Campaign Credits</span>
+          </div>
+          <h2 className="growth-cta-title">
+            Ready to Supercharge Your App's Growth?
+          </h2>
+          <p className="growth-cta-desc">
+            Stop paying for empty impressions or click bots. Launch your targeted campaign in under 2 minutes 
+            and pay strictly when real Indian users verify actions.
+          </p>
+          <div className="growth-cta-actions">
+            <Link 
+              href="/partner/create-campaign" 
+              className="glow-btn-grow"
+              onClick={handleLaunchCampaignClick}
+            >
+              Launch Your Campaign Now →
+            </Link>
+            {onSwitchToEarn && (
+              <button 
+                type="button" 
+                onClick={onSwitchToEarn} 
+                className="secondary-outline-btn growth-switch-btn"
+              >
+                💰 Switch to Earner Mode (To Earn)
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 10. DEDICATED BUSINESS & GROWTH FOOTER */}
+      <footer className="business-footer">
+        <div className="business-footer-container">
+          <div className="business-footer-grid">
+            
+            {/* Left Brand Col */}
+            <div className="business-footer-brand-col">
+              <div className="business-footer-brand-row">
+                <AppLogo size={34} />
+                <BrandLogo fontSize="1.35rem" />
+                <span className="business-tag-pill">For Business</span>
+              </div>
+              <p className="business-footer-tagline">
+                India’s premier performance marketing & verified user acquisition platform. 
+                Pay strictly for verified app installs, reviews, and high-retention users with zero bot traffic.
+              </p>
+              <div className="business-trust-badges">
+                <div className="trust-badge-item">
+                  <span className="trust-check">✓</span>
+                  <span>100% Anti-Fraud Guarantee</span>
+                </div>
+                <div className="trust-badge-item">
+                  <span className="trust-check">✓</span>
+                  <span>Human-Verified Proofs & Audits</span>
+                </div>
+                <div className="trust-badge-item">
+                  <span className="trust-check">✓</span>
+                  <span>Pan-India Real Audiences</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Links Cols */}
+            <div className="business-footer-links-group">
+              
+              {/* Col 1: Solutions */}
+              <div className="business-footer-col">
+                <h4>Growth Solutions</h4>
+                <Link href="#channels">App Installs & Signups</Link>
+                <Link href="#channels">Google Play Store Reviews</Link>
+                <Link href="#channels">Google Maps Local SEO</Link>
+                <Link href="#channels">Telegram & WA Community</Link>
+                <Link href="#channels">Targeted User Surveys</Link>
+              </div>
+
+              {/* Col 2: Partner Portal */}
+              <div className="business-footer-col">
+                <h4>Partner Portal</h4>
+                <Link 
+                  href="/partner/create-campaign"
+                  onClick={handleLaunchCampaignClick}
+                >
+                  Create Campaign (100 Free Credits)
+                </Link>
+                <Link href="/partner/overview">Partner Dashboard</Link>
+                <Link href="#how-it-works">How It Works</Link>
+                <Link href="#faq">Partner FAQs</Link>
+                <Link href="/partner/help-center">Help Center & Support</Link>
+              </div>
+
+              {/* Col 3: Earners & Legal */}
+              <div className="business-footer-col">
+                <h4>Earners & Safety</h4>
+                {onSwitchToEarn ? (
+                  <button 
+                    type="button" 
+                    onClick={onSwitchToEarn}
+                    className="footer-link-btn"
+                  >
+                    💰 Switch to To Earn
+                  </button>
+                ) : (
+                  <Link href="/">💰 Switch to To Earn</Link>
+                )}
+                <a href="/EarnByapps%20v-1.0.1%20.apk" download="EarnByApps-v1.0.1.apk">
+                  Download Earner APK
+                </a>
+                <Link href="/login">User & Partner Login</Link>
+                <Link href="/partner/terms">Terms of Service</Link>
+                <Link href="/partner/privacy">Privacy Policy</Link>
+                <a href="mailto:support@earnbyapps.com">Partner Support</a>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="business-footer-bottom">
+            <div className="footer-copyright">
+              © {new Date().getFullYear()} EarnByApps for Business. All rights reserved.
+            </div>
+            <div className="footer-badges">
+              <span className="footer-status-dot"></span>
+              <span>Pan-India Verified Audience Network • Real-Time Fraud Protection Active</span>
+            </div>
+          </div>
+        </div>
+      </footer>
 
       {/* COMPREHENSIVE STYLES */}
       <style>{`
@@ -327,7 +461,7 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           flex-direction: column;
           align-items: center;
           width: 100%;
-          padding-bottom: 80px;
+          padding-bottom: 0;
           box-sizing: border-box;
           overflow-x: hidden;
         }
@@ -765,6 +899,191 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           line-height: 1.6;
         }
 
+        /* 9. PRE-FOOTER GROWTH CTA */
+        .growth-cta-section {
+          width: 100%;
+          max-width: 1160px;
+          margin: 70px auto 0;
+          padding: 0 24px;
+          box-sizing: border-box;
+        }
+        .growth-cta-card {
+          position: relative;
+          background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(99, 102, 241, 0.03) 100%), var(--bg-card);
+          border: 1px solid rgba(79, 70, 229, 0.25);
+          border-radius: 24px;
+          padding: 44px 32px;
+          text-align: center;
+          overflow: hidden;
+          box-shadow: 0 16px 40px -12px rgba(79, 70, 229, 0.15);
+        }
+        .growth-cta-pill {
+          display: inline-flex;
+          align-items: center;
+          background: rgba(79, 70, 229, 0.12);
+          border: 1px solid rgba(79, 70, 229, 0.3);
+          color: #4f46e5;
+          font-size: 0.8rem;
+          font-weight: 800;
+          padding: 5px 14px;
+          border-radius: 999px;
+          margin-bottom: 16px;
+          letter-spacing: 0.04em;
+        }
+        .growth-cta-title {
+          font-family: var(--font-display);
+          font-size: 2.1rem;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          color: var(--text-primary);
+          margin-bottom: 14px;
+          line-height: 1.25;
+        }
+        .growth-cta-desc {
+          font-size: 1.02rem;
+          color: var(--text-secondary);
+          max-width: 660px;
+          margin: 0 auto 28px;
+          line-height: 1.6;
+        }
+        .growth-cta-actions {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .growth-switch-btn {
+          cursor: pointer;
+        }
+
+        /* 10. DEDICATED BUSINESS FOOTER */
+        .business-footer {
+          width: 100%;
+          border-top: 1px solid var(--border-color);
+          background: var(--bg-card);
+          margin-top: 80px;
+          padding: 60px 24px 28px;
+          box-sizing: border-box;
+        }
+        .business-footer-container {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+        .business-footer-grid {
+          display: flex;
+          justify-content: space-between;
+          gap: 48px;
+          flex-wrap: wrap;
+          padding-bottom: 44px;
+          border-bottom: 1px solid var(--border-color);
+        }
+        .business-footer-brand-col {
+          max-width: 440px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .business-footer-brand-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .business-tag-pill {
+          background: rgba(79, 70, 229, 0.12);
+          border: 1px solid rgba(79, 70, 229, 0.28);
+          color: #4f46e5;
+          font-size: 0.72rem;
+          font-weight: 800;
+          padding: 3px 9px;
+          border-radius: 999px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+        }
+        .business-footer-tagline {
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          line-height: 1.65;
+          margin: 0;
+        }
+        .business-trust-badges {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-top: 6px;
+        }
+        .trust-badge-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+        .trust-check {
+          color: #10b981;
+          font-weight: 900;
+        }
+        .business-footer-links-group {
+          display: flex;
+          gap: 52px;
+          flex-wrap: wrap;
+        }
+        .business-footer-col {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .business-footer-col h4 {
+          font-family: var(--font-display);
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: var(--text-primary);
+          margin-bottom: 4px;
+          letter-spacing: -0.01em;
+        }
+        .business-footer-col a,
+        .business-footer-col button.footer-link-btn {
+          color: var(--text-secondary);
+          text-decoration: none;
+          font-size: 0.88rem;
+          transition: color 0.2s ease, transform 0.2s ease;
+          background: transparent;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          display: inline-block;
+        }
+        .business-footer-col a:hover,
+        .business-footer-col button.footer-link-btn:hover {
+          color: #4f46e5;
+          transform: translateX(2px);
+        }
+        .business-footer-bottom {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding-top: 24px;
+          flex-wrap: wrap;
+          gap: 16px;
+          font-size: 0.82rem;
+          color: var(--text-muted);
+        }
+        .footer-badges {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .footer-status-dot {
+          width: 8px;
+          height: 8px;
+          background: #10b981;
+          border-radius: 50%;
+          box-shadow: 0 0 6px #10b981;
+        }
 
         /* Responsive Breakpoints */
         @media (max-width: 960px) {
@@ -784,6 +1103,13 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           .steps-container-grid, .channels-grid {
             grid-template-columns: 1fr;
           }
+          .business-footer-grid {
+            flex-direction: column;
+            gap: 36px;
+          }
+          .business-footer-links-group {
+            gap: 36px;
+          }
         }
 
         @media (max-width: 640px) {
@@ -798,6 +1124,21 @@ export default function BusinessView({ onSwitchToEarn }: { onSwitchToEarn?: () =
           }
           .stat-card:last-child {
             border-bottom: none;
+          }
+          .growth-cta-card {
+            padding: 32px 20px;
+          }
+          .growth-cta-title {
+            font-size: 1.65rem;
+          }
+          .business-footer-links-group {
+            flex-direction: column;
+            gap: 28px;
+          }
+          .business-footer-bottom {
+            flex-direction: column;
+            text-align: center;
+            gap: 10px;
           }
         }
       `}</style>

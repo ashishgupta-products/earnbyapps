@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation';
 export default function Footer() {
   const pathname = usePathname();
 
-  // Hide the footer in admin and partner dashboards, and on homepage (which has its dedicated rich footer)
-  if (pathname.startsWith('/admin') || pathname.startsWith('/partner') || pathname === '/') {
+  // Hide the footer in admin, partner dashboards, homepage, and business page (which have dedicated rich footers)
+  if (pathname.startsWith('/admin') || pathname.startsWith('/partner') || pathname === '/' || pathname === '/business') {
     return null;
   }
 
@@ -16,9 +16,9 @@ export default function Footer() {
       <div className="footer-content">
         <p>&copy; {new Date().getFullYear()} EarnByApps. All rights reserved.</p>
         <div className="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Support</a>
+          <a href="/partner/privacy">Privacy Policy</a>
+          <a href="/partner/terms">Terms of Service</a>
+          <a href="/partner/help-center">Support</a>
         </div>
       </div>
       <style>{`

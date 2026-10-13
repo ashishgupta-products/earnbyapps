@@ -26,6 +26,15 @@ export default function PartnerLayout({ children }: { children: React.ReactNode 
   };
 
   const isLoggedIn = !!session || !!userProfile;
+  const isPublicLegalRoute = pathname === '/partner/terms' || pathname === '/partner/privacy';
+
+  if (isPublicLegalRoute) {
+    return (
+      <div className="partner-public-legal-wrap" style={{ minHeight: '100vh', background: 'var(--bg-dark, #f8fafc)' }}>
+        {children}
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return (

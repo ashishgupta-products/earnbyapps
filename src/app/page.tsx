@@ -387,7 +387,16 @@ export default function Home() {
               <h4>Legal & Safety</h4>
               <Link href="/partner/terms">Terms of Service</Link>
               <Link href="/partner/privacy">Privacy Policy</Link>
-              <Link href="/business">Business / Partner Portal</Link>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setActiveMode('grow');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="footer-switch-mode-btn"
+              >
+                🚀 Switch to To Grow (For Business)
+              </button>
             </div>
           </div>
         </div>
@@ -1078,13 +1087,21 @@ export default function Home() {
           margin: 0 0 6px;
           color: var(--text-primary, #0f172a);
         }
-        .footer-col a {
+        .footer-col a,
+        .footer-col button.footer-switch-mode-btn {
           color: var(--text-secondary, #475569);
           text-decoration: none;
           font-size: 0.86rem;
           transition: color 0.2s;
+          background: transparent;
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
         }
-        .footer-col a:hover {
+        .footer-col a:hover,
+        .footer-col button.footer-switch-mode-btn:hover {
           color: #4f46e5;
         }
         .footer-bottom-bar {
