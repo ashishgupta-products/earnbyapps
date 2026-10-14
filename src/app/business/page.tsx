@@ -4,6 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import HomeAudienceSwitcher from '@/components/HomeAudienceSwitcher';
 import BusinessView from '@/components/BusinessView';
+import HomeFooter from '@/components/HomeFooter';
 
 export default function BusinessPage() {
   const router = useRouter();
@@ -18,6 +19,14 @@ export default function BusinessPage() {
     <div className="business-page-wrapper">
       <HomeAudienceSwitcher activeMode="grow" onModeChange={handleModeChange} />
       <BusinessView onSwitchToEarn={() => router.push('/')} />
+      <HomeFooter 
+        activeMode="grow" 
+        onSwitchMode={(mode) => {
+          if (mode === 'earn') {
+            router.push('/');
+          }
+        }} 
+      />
     </div>
   );
 }
